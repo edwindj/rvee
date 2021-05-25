@@ -12,7 +12,8 @@ fn test_r(x C.SEXP) f64{
   return C.SCALAR_DVAL(x)
 }
 
-fn test_r2(x C.SEXP){
-  y := C.REAL(x)
-  println(y)
+[rv_export]
+fn get_length(x C.SEXP) int{
+  n := NumericVector{x}
+  return n.length()
 }

@@ -13,8 +13,19 @@ extern SEXP _vtest_test(SEXP x){
   return ret;
 }
 
+extern SEXP _vtest_getlength(SEXP x){
+  // wrapping SEXP
+
+  int v_ret = main__get_length(x);
+
+  SEXP ret = Rf_ScalarInteger(v_ret);
+  return ret;
+}
+
+
 static const R_CallMethodDef CallEntries[] = {
   {"_vtest_test", (DL_FUNC) &_vtest_test, 1},
+  {"_vtest_getlength", (DL_FUNC) &_vtest_getlength, 1},
   {NULL, NULL, 0}
 };
 

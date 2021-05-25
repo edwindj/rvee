@@ -1,10 +1,10 @@
 
 #ifndef V_COMMIT_HASH
-	#define V_COMMIT_HASH "5b826b2"
+	#define V_COMMIT_HASH "5b8402b"
 #endif
 
 #ifndef V_CURRENT_COMMIT_HASH
-	#define V_CURRENT_COMMIT_HASH "8361f71"
+	#define V_CURRENT_COMMIT_HASH "4217f05"
 #endif
 
 // V comptime_defines:
@@ -31,6 +31,7 @@ typedef struct strconv__Uint128 strconv__Uint128;
 typedef union strconv__Uf32 strconv__Uf32;
 typedef union strconv__Uf64 strconv__Uf64;
 typedef union strconv__Float64u strconv__Float64u;
+typedef union strconv__Float32u strconv__Float32u;
 typedef struct array array;
 typedef struct VCastTypeIndexName VCastTypeIndexName;
 typedef struct VAssertMetaInfo VAssertMetaInfo;
@@ -43,11 +44,16 @@ typedef struct map map;
 typedef struct Error Error;
 typedef struct None__ None__;
 typedef struct Option Option;
+typedef struct VMemoryBlock VMemoryBlock;
 typedef struct SortedMap SortedMap;
 typedef struct mapnode mapnode;
 typedef struct string string;
 typedef struct ustring ustring;
 typedef struct RepIndex RepIndex;
+typedef union StrIntpMem StrIntpMem;
+typedef struct StrIntpCgenData StrIntpCgenData;
+typedef struct StrIntpData StrIntpData;
+typedef struct main__NumericVector main__NumericVector;
 
 // V typedefs2:
 typedef struct Option_int Option_int;
@@ -108,8 +114,11 @@ typedef void (*MapFreeFn)(voidptr);
 
 //============================== HELPER C MACROS =============================*/
 //#define tos4(s, slen) ((string){.str=(s), .len=(slen)})
+// _SLIT0 is used as NULL string for literal arguments
 // `"" s` is used to enforce a string literal argument
+#define _SLIT0 (string){.len=0} 
 #define _SLIT(s) ((string){.str=(byteptr)("" s), .len=(sizeof(s)-1), .is_lit=1})
+//#define _SLIT(s) ((string){.str=(byteptr)("" s), .len=(sizeof(s)-1), .is_lit=1})
 // take the address of an rvalue
 #define ADDR(type, expr) (&((type[]){expr}[0]))
 // copy something to the heap
@@ -669,6 +678,28 @@ typedef enum {
 	ChanState_closed, // +2
 } ChanState;
 
+typedef enum {
+	StrIntpType_si_no_str = 0, // 0
+	StrIntpType_si_c, // 0+1
+	StrIntpType_si_u8, // 0+2
+	StrIntpType_si_i8, // 0+3
+	StrIntpType_si_u16, // 0+4
+	StrIntpType_si_i16, // 0+5
+	StrIntpType_si_u32, // 0+6
+	StrIntpType_si_i32, // 0+7
+	StrIntpType_si_u64, // 0+8
+	StrIntpType_si_i64, // 0+9
+	StrIntpType_si_e32, // 0+10
+	StrIntpType_si_e64, // 0+11
+	StrIntpType_si_f32, // 0+12
+	StrIntpType_si_f64, // 0+13
+	StrIntpType_si_g32, // 0+14
+	StrIntpType_si_g64, // 0+15
+	StrIntpType_si_s, // 0+16
+	StrIntpType_si_p, // 0+17
+	StrIntpType_si_vp, // 0+18
+} StrIntpType;
+
 
 // V type definitions:
 typedef struct {
@@ -745,19 +776,28 @@ typedef byte u8;
 typedef string Array_fixed_string_11 [11];
 typedef voidptr Array_fixed_voidptr_11 [11];
 typedef array Array_RepIndex;
+typedef array Array_f64;
+typedef main__NumericVector main__Vector;
 typedef map Map_string_int;
 typedef array Array_u64;
 typedef array Array_u32;
 typedef array Array_strconv__Uint128;
-typedef array Array_f64;
+typedef byte Array_fixed_byte_32 [32];
 typedef byte Array_fixed_byte_26 [26];
 typedef array Array_rune;
 typedef voidptr Array_fixed_voidptr_100 [100];
 typedef byte Array_fixed_byte_1000 [1000];
 typedef byte Array_fixed_byte_256 [256];
+typedef array Array_StrIntpType;
 // builtin types:
 //------------------ #endbuiltin
 typedef pthread_t __v_thread;
+struct StrIntpCgenData {
+	string str;
+	string fmt;
+	string d;
+};
+
 struct ustring {
 	string s;
 	Array_int runes;
@@ -809,9 +849,29 @@ struct StructAttribute {
 	AttributeKind kind;
 };
 
+union strconv__Float64u {
+	f64 f;
+	u64 u;
+};
+
+union strconv__Float32u {
+	f32 f;
+	u32 u;
+};
+
 struct None__ {
 	string msg;
 	int code;
+};
+
+struct VMemoryBlock {
+	int id;
+	int cap;
+	byte* start;
+	VMemoryBlock* previous;
+	int remaining;
+	byte* current;
+	int mallocs;
 };
 
 struct SortedMap {
@@ -825,21 +885,47 @@ struct RepIndex {
 	int val_idx;
 };
 
+union StrIntpMem {
+	u32 d_c;
+	byte d_u8;
+	i8 d_i8;
+	u16 d_u16;
+	i16 d_i16;
+	u32 d_u32;
+	int d_i32;
+	u64 d_u64;
+	i64 d_i64;
+	f32 d_f32;
+	f64 d_f64;
+	string d_s;
+	voidptr d_p;
+	voidptr d_vp;
+};
+
 struct strings__Builder {
 	Array_byte buf;
 	int len;
 	int initial_size;
 };
 
+struct strconv__BF_param {
+	byte pad_ch;
+	int len0;
+	int len1;
+	bool positive;
+	bool sign_flag;
+	strconv__Align_text allign;
+	bool rm_tail_zero;
+};
+
+struct main__NumericVector {
+	SEXP sexp;
+};
+
 struct strconv__PrepNumber {
 	bool negative;
 	int exponent;
 	u64 mantissa;
-};
-
-union strconv__Float64u {
-	f64 f;
-	u64 u;
 };
 
 struct strconv__Dec32 {
@@ -862,16 +948,6 @@ union strconv__Uf64 {
 	u64 u;
 };
 
-struct strconv__BF_param {
-	byte pad_ch;
-	int len0;
-	int len1;
-	bool positive;
-	bool sign_flag;
-	strconv__Align_text allign;
-	bool rm_tail_zero;
-};
-
 struct strconv__Uint128 {
 	u64 lo;
 	u64 hi;
@@ -882,6 +958,12 @@ struct mapnode {
 	int len;
 	Array_fixed_string_11 keys;
 	Array_fixed_voidptr_11 values;
+};
+
+struct StrIntpData {
+	string str;
+	u32 fmt;
+	StrIntpMem d;
 };
 
 
@@ -943,8 +1025,6 @@ struct Option_int {
 // V json forward decls:
 
 // V definitions:
-string _STR(const char*, int, ...);
-string _STR_TMP(const char*, ...);
 // end of definitions #endif
 strings__Builder strings__new_builder(int initial_size);
 void strings__Builder_write_bytes(strings__Builder* b, byte* bytes, int len);
@@ -1026,6 +1106,10 @@ VV_LOCAL_SYMBOL multi_return_u32_u32_u32 strconv__lsr96(u32 s2, u32 s1, u32 s0);
 VV_LOCAL_SYMBOL multi_return_u32_u32_u32 strconv__lsl96(u32 s2, u32 s1, u32 s0);
 VV_LOCAL_SYMBOL multi_return_u32_u32_u32 strconv__add96(u32 s2, u32 s1, u32 s0, u32 d2, u32 d1, u32 d0);
 VV_LOCAL_SYMBOL multi_return_u32_u32_u32 strconv__sub96(u32 s2, u32 s1, u32 s0, u32 d2, u32 d1, u32 d0);
+u32 _const_strconv__single_plus_zero; // inited later
+u32 _const_strconv__single_minus_zero; // inited later
+u32 _const_strconv__single_plus_infinity; // inited later
+u32 _const_strconv__single_minus_infinity; // inited later
 #define _const_strconv__digits 18
 u64 _const_strconv__double_plus_zero; // inited later
 u64 _const_strconv__double_minus_zero; // inited later
@@ -1036,11 +1120,11 @@ u64 _const_strconv__double_minus_infinity; // inited later
 #define _const_strconv__parser_mzero 2
 #define _const_strconv__parser_pinf 3
 #define _const_strconv__parser_minf 4
-#define _const_strconv__c_dpoint L'.'
-#define _const_strconv__c_plus L'+'
-#define _const_strconv__c_minus L'-'
-#define _const_strconv__c_zero L'0'
-#define _const_strconv__c_nine L'9'
+#define _const_strconv__c_dpoint '.'
+#define _const_strconv__c_plus '+'
+#define _const_strconv__c_minus '-'
+#define _const_strconv__c_zero '0'
+#define _const_strconv__c_nine '9'
 u32 _const_strconv__c_ten; // inited later
 VV_LOCAL_SYMBOL bool strconv__is_digit(byte x);
 VV_LOCAL_SYMBOL bool strconv__is_space(byte x);
@@ -1068,7 +1152,7 @@ u32 _const_strconv__expbits32; // inited later
 #define _const_strconv__maxexp32 255
 string strconv__Dec32_get_string_32(strconv__Dec32 d, bool neg, int i_n_digit, int i_pad_digit);
 VV_LOCAL_SYMBOL multi_return_strconv__Dec32_bool strconv__f32_to_decimal_exact_int(u32 i_mant, u32 exp);
-strconv__Dec32 strconv__f32_to_decimal(u32 mant, u32 exp);
+VV_LOCAL_SYMBOL strconv__Dec32 strconv__f32_to_decimal(u32 mant, u32 exp);
 string strconv__f32_to_str(f32 f, int n_digit);
 string strconv__f32_to_str_pad(f32 f, int n_digit);
 Array_u64 _const_strconv__ten_pow_table_64; // inited later
@@ -1083,6 +1167,13 @@ string strconv__f64_to_str(f64 f, int n_digit);
 string strconv__f64_to_str_pad(f64 f, int n_digit);
 Array_f64 _const_strconv__dec_round; // inited later
 string strconv__format_str(string s, strconv__BF_param p);
+void strconv__format_str_sb(string s, strconv__BF_param p, strings__Builder* sb);
+string _const_strconv__digit_pairs; // a string literal, inited later
+void strconv__format_dec_sb(u64 d, strconv__BF_param p, strings__Builder* res);
+string strconv__f64_to_str_lnd1(f64 f, int dec_digit);
+string strconv__format_fl(f64 f, strconv__BF_param p);
+string strconv__format_es(f64 f, strconv__BF_param p);
+string strconv__remove_tail_zeros(string s);
 string strconv__ftoa_64(f64 f);
 string strconv__ftoa_long_64(f64 f);
 string strconv__ftoa_32(f32 f);
@@ -1104,7 +1195,7 @@ VV_LOCAL_SYMBOL int strconv__bool_to_int(bool b);
 VV_LOCAL_SYMBOL u32 strconv__bool_to_u32(bool b);
 VV_LOCAL_SYMBOL u64 strconv__bool_to_u64(bool b);
 VV_LOCAL_SYMBOL string strconv__get_string_special(bool neg, bool expZero, bool mantZero);
-VV_LOCAL_SYMBOL int strconv__decimal_len_32(u32 u);
+int strconv__decimal_len_32(u32 u);
 VV_LOCAL_SYMBOL u32 strconv__mul_shift_32(u32 m, u64 mul, int ishift);
 VV_LOCAL_SYMBOL u32 strconv__mul_pow5_invdiv_pow2(u32 m, u32 q, int j);
 VV_LOCAL_SYMBOL u32 strconv__mul_pow5_div_pow2(u32 m, u32 i, int j);
@@ -1114,20 +1205,23 @@ VV_LOCAL_SYMBOL bool strconv__multiple_of_power_of_two_32(u32 v, u32 p);
 VV_LOCAL_SYMBOL u32 strconv__log10_pow2(int e);
 VV_LOCAL_SYMBOL u32 strconv__log10_pow5(int e);
 VV_LOCAL_SYMBOL int strconv__pow5_bits(int e);
-VV_LOCAL_SYMBOL int strconv__decimal_len_64(u64 u);
+int strconv__decimal_len_64(u64 u);
 VV_LOCAL_SYMBOL u64 strconv__shift_right_128(strconv__Uint128 v, int shift);
 VV_LOCAL_SYMBOL u64 strconv__mul_shift_64(u64 m, strconv__Uint128 mul, int shift);
 VV_LOCAL_SYMBOL u32 strconv__pow5_factor_64(u64 v_i);
 VV_LOCAL_SYMBOL bool strconv__multiple_of_power_of_five_64(u64 v, u32 p);
 VV_LOCAL_SYMBOL bool strconv__multiple_of_power_of_two_64(u64 v, u32 p);
-string strconv__f32_to_str_l(f64 f);
+string strconv__f32_to_str_l(f32 f);
+string strconv__f32_to_str_l_no_dot(f32 f);
 string strconv__f64_to_str_l(f64 f);
+string strconv__f64_to_str_l_no_dot(f64 f);
+string strconv__fxx_to_str_l_parse(string s);
+string strconv__fxx_to_str_l_parse_no_dot(string s);
 int strconv__dec_digits(u64 n);
 void strconv__v_printf(string str, Array_voidptr pt);
 string strconv__v_sprintf(string str, Array_voidptr pt);
 VV_LOCAL_SYMBOL void strconv__v_sprintf_panic(int idx, int len);
 VV_LOCAL_SYMBOL f64 strconv__fabs(f64 x);
-string strconv__f64_to_str_lnd1(f64 f, int dec_digit);
 string strconv__format_fl_old(f64 f, strconv__BF_param p);
 string strconv__format_es_old(f64 f, strconv__BF_param p);
 string strconv__remove_tail_zeros_old(string s);
@@ -1198,6 +1292,7 @@ void eprintln(string s);
 void eprint(string s);
 void print(string s);
 void println(string s);
+i64 total_m = 0; // global
 byte* v_malloc(int n);
 byte* v_realloc(byte* b, int n);
 byte* realloc_data(byte* old_data, int old_size, int new_size);
@@ -1206,13 +1301,9 @@ byte* vcalloc_noscan(int n);
 void v_free(voidptr ptr);
 voidptr memdup(voidptr src, int sz);
 VV_LOCAL_SYMBOL int v_fixed_index(int i, int len);
-byte* g_m2_buf; // global
-byte* g_m2_ptr; // global
 bool isnil(voidptr v);
 int is_atty(int fd);
 void print_backtrace();
-i64 total_m = 0; // global
-int nr_mallocs = 0; // global
 Array_VCastTypeIndexName as_cast_type_indexes; // global
 VV_LOCAL_SYMBOL voidptr __as_cast(voidptr obj, int obj_type, int expected_type);
 VV_LOCAL_SYMBOL void __print_assert_failure(VAssertMetaInfo* i);
@@ -1228,10 +1319,12 @@ void chan_close(chan ch);
 ChanState chan_try_pop(chan ch, voidptr obj);
 ChanState chan_try_push(chan ch, voidptr obj);
 string f64_str(f64 x);
+string f64_strg(f64 x);
 string float_literal_str(float_literal d);
 string f64_strsci(f64 x, int digit_num);
 string f64_strlong(f64 x);
 string f32_str(f32 x);
+string f32_strg(f32 x);
 string f32_strsci(f32 x, int digit_num);
 string f32_strlong(f32 x);
 f32 f32_abs(f32 a);
@@ -1306,7 +1399,7 @@ VV_LOCAL_SYMBOL void map_clone_int_2(voidptr dest, voidptr pkey);
 VV_LOCAL_SYMBOL void map_clone_int_4(voidptr dest, voidptr pkey);
 VV_LOCAL_SYMBOL void map_clone_int_8(voidptr dest, voidptr pkey);
 VV_LOCAL_SYMBOL void map_free_string(voidptr pkey);
-VV_LOCAL_SYMBOL void map_free_nop(voidptr _t372);
+VV_LOCAL_SYMBOL void map_free_nop(voidptr _t392);
 VV_LOCAL_SYMBOL map new_map(int key_bytes, int value_bytes, u64 (*hash_fn)(voidptr ), bool (*key_eq_fn)(voidptr , voidptr ), void (*clone_fn)(voidptr , voidptr ), void (*free_fn)(voidptr ));
 VV_LOCAL_SYMBOL map new_map_init(u64 (*hash_fn)(voidptr ), bool (*key_eq_fn)(voidptr , voidptr ), void (*clone_fn)(voidptr , voidptr ), void (*free_fn)(voidptr ), int n, int key_bytes, int value_bytes, voidptr keys, voidptr values);
 map map_move(map* m);
@@ -1330,13 +1423,23 @@ map map_clone(map* m);
 void map_free(map* m);
 string IError_str(IError err);
 IError _const_none__; // inited later
-VV_LOCAL_SYMBOL string None___str(None__ _t394);
+VV_LOCAL_SYMBOL string None___str(None__ _t414);
+VV_LOCAL_SYMBOL void trace_error(string x);
 IError v_error(string message);
 IError error_with_code(string message, int code);
 VV_LOCAL_SYMBOL void opt_ok(voidptr data, Option* option, int size);
 void Error_free(Error* e);
 void None___free(None__* n);
 void IError_free(IError* ie);
+int _const_prealloc_block_size; // inited later
+VMemoryBlock* g_memory_block; // global
+VV_LOCAL_SYMBOL VMemoryBlock* vmemory_block_new(VMemoryBlock* prev, int at_least);
+VV_LOCAL_SYMBOL byte* vmemory_block_malloc(int n);
+VV_LOCAL_SYMBOL void prealloc_vinit();
+VV_LOCAL_SYMBOL void prealloc_vcleanup();
+VV_LOCAL_SYMBOL byte* prealloc_malloc(int n);
+VV_LOCAL_SYMBOL byte* prealloc_realloc(byte* old_data, int old_size, int new_size);
+VV_LOCAL_SYMBOL byte* prealloc_calloc(int n);
 string rune_str(rune c);
 bool byte_is_capital(byte c);
 Array_byte Array_byte_clone(Array_byte b);
@@ -1400,13 +1503,9 @@ f64 string_f64(string s);
 u16 string_u16(string s);
 u32 string_u32(string s);
 u64 string_u64(string s);
-VV_LOCAL_SYMBOL bool string_eq(string s, string a);
-VV_LOCAL_SYMBOL bool string_ne(string s, string a);
-VV_LOCAL_SYMBOL bool string_lt(string s, string a);
-VV_LOCAL_SYMBOL bool string_le(string s, string a);
-VV_LOCAL_SYMBOL bool string_gt(string s, string a);
-VV_LOCAL_SYMBOL bool string_ge(string s, string a);
-string string_add(string s, string a);
+VV_LOCAL_SYMBOL bool string__eq(string s, string a);
+VV_LOCAL_SYMBOL bool string__lt(string s, string a);
+VV_LOCAL_SYMBOL string string__plus(string s, string a);
 Array_string string_split(string s, string delim);
 Array_string string_split_nth(string s, string delim, int nth);
 Array_string string_split_into_lines(string s);
@@ -1502,6 +1601,22 @@ string byteptr_vstring_literal(byteptr bp);
 string byteptr_vstring_literal_with_len(byteptr bp, int len);
 string charptr_vstring_literal(charptr cp);
 string charptr_vstring_literal_with_len(charptr cp, int len);
+string StrIntpType_str(StrIntpType x);
+VV_LOCAL_SYMBOL f64 fabs64(f64 x);
+VV_LOCAL_SYMBOL f32 fabs32(f32 x);
+VV_LOCAL_SYMBOL u64 abs64(i64 x);
+u64 get_str_intp_u64_format(StrIntpType fmt_type, int in_width, int in_precision, bool in_tail_zeros, bool in_sign, u8 in_pad_ch, int in_base, bool in_upper_case);
+u32 get_str_intp_u32_format(StrIntpType fmt_type, int in_width, int in_precision, bool in_tail_zeros, bool in_sign, u8 in_pad_ch, int in_base, bool in_upper_case);
+VV_LOCAL_SYMBOL void StrIntpData_get_fmt_format(StrIntpData data, strings__Builder* sb);
+string str_intp(int data_len, voidptr in_data);
+string _const_si_s_code; // a string literal, inited later
+string _const_si_g32_code; // a string literal, inited later
+string _const_si_g64_code; // a string literal, inited later
+string str_intp_sq(string in_str);
+string str_intp_rune(string in_str);
+string str_intp_g32(string in_str);
+string str_intp_g64(string in_str);
+string str_intp_sub(string base_str, string in_str);
 #define _const_cp_utf8 65001
 u16* string_to_wide(string _str);
 string string_from_wide(u16* _wstr);
@@ -1514,10 +1629,14 @@ int string_utf32_code(string _rune);
 VV_LOCAL_SYMBOL int utf8_len(byte c);
 int utf8_str_len(string s);
 int utf8_str_visible_length(string s);
+VV_LOCAL_SYMBOL Array_f64 main__as_f64(voidptr data, int len);
+VV_LOCAL_SYMBOL Array_int main__as_int(voidptr data, int len);
+int main__NumericVector_length(main__NumericVector v);
+Array_f64 main__NumericVector_f64(main__NumericVector n);
 f64 main__test(f64 x);
 multi_return_f64_f64 main__test2(f64 x);
 VV_LOCAL_SYMBOL f64 main__test_r(SEXP x);
-VV_LOCAL_SYMBOL void main__test_r2(SEXP x);
+VV_LOCAL_SYMBOL int main__get_length(SEXP x);
 
 // V interface table:
 static IError I_None___to_Interface_IError(None__* x);
@@ -1554,8 +1673,12 @@ static inline IError I_Error_to_Interface_IError(Error* x) {
 void vinit_string_literals(){
 	_const_math__bits__overflow_error = _SLIT("Overflow Error");
 	_const_math__bits__divide_error = _SLIT("Divide Error");
+	_const_strconv__digit_pairs = _SLIT("00102030405060708090011121314151617181910212223242526272829203132333435363738393041424344454647484940515253545556575859506162636465666768696071727374757677787970818283848586878889809192939495969798999");
 	_const_strconv__base_digits = _SLIT("0123456789abcdefghijklmnopqrstuvwxyz");
 	_const_digit_pairs = _SLIT("00102030405060708090011121314151617181910212223242526272829203132333435363738393041424344454647484940515253545556575859506162636465666768696071727374757677787970818283848586878889809192939495969798999");
+	_const_si_s_code = _SLIT("0xfe10");
+	_const_si_g32_code = _SLIT("0xfe0e");
+	_const_si_g64_code = _SLIT("0xfe0f");
 }
 // << string literal consts
 
@@ -1569,134 +1692,6 @@ static char * v_typeof_interface_IError(int sidx) { /* IError */
 	return "unknown IError";
 }
 // << typeof() support for sum types
-
-
-void _STR_PRINT_ARG(const char *fmt, char** refbufp, int *nbytes, int *memsize, int guess, ...) {
-	va_list args;
-	va_start(args, guess);
-	// NB: (*memsize - *nbytes) === how much free space is left at the end of the current buffer refbufp
-	// *memsize === total length of the buffer refbufp
-	// *nbytes === already occupied bytes of buffer refbufp
-	// guess === how many bytes were taken during the current vsnprintf run
-	for(;;) {
-		int remaining_space = *memsize - *nbytes;
-		if (guess < remaining_space) {
-			guess = vsnprintf(*refbufp + *nbytes, *memsize - *nbytes, fmt, args);
-			if (guess < remaining_space) { // result did fit into buffer
-				*nbytes += guess;
-				break;
-			}
-		}
-		// increase buffer (somewhat exponentially)
-		*memsize += guess + 3 * (*memsize) / 2;
-#ifdef _VGCBOEHM
-		*refbufp = (char*)GC_REALLOC((void*)*refbufp, *memsize);
-#else
-		*refbufp = (char*)realloc((void*)*refbufp, *memsize);
-#endif
-	}
-	va_end(args);
-}
-
-string _STR(const char *fmt, int nfmts, ...) {
-	va_list argptr;
-	int memsize = 128;
-	int nbytes = 0;
-#ifdef _VGCBOEHM
-	char* buf = (char*)GC_MALLOC(memsize);
-#else
-	char* buf = (char*)malloc(memsize);
-#endif
-	va_start(argptr, nfmts);
-	for (int i=0; i<nfmts; ++i) {
-		int k = strlen(fmt);
-		bool is_fspec = false;
-		for (int j=0; j<k; ++j) {
-			if (fmt[j] == '%') {
-				j++;
-				if (fmt[j] != '%') {
-					is_fspec = true;
-					break;
-				}
-			}
-		}
-		if (is_fspec) {
-			char f = fmt[k-1];
-			char fup = f & 0xdf; // toupper
-			bool l = fmt[k-2] == 'l';
-			bool ll = l && fmt[k-3] == 'l';
-			if (f == 'u' || fup == 'X' || f == 'o' || f == 'd' || f == 'c') { // int...
-				if (ll) _STR_PRINT_ARG(fmt, &buf, &nbytes, &memsize, k+16, va_arg(argptr, long long));
-				else if (l) _STR_PRINT_ARG(fmt, &buf, &nbytes, &memsize, k+10, va_arg(argptr, long));
-				else _STR_PRINT_ARG(fmt, &buf, &nbytes, &memsize, k+8, va_arg(argptr, int));
-			} else if (fup >= 'E' && fup <= 'G') { // floating point
-				_STR_PRINT_ARG(fmt, &buf, &nbytes, &memsize, k+10, va_arg(argptr, double));
-			} else if (f == 'p') {
-				_STR_PRINT_ARG(fmt, &buf, &nbytes, &memsize, k+14, va_arg(argptr, void*));
-			} else if (f == 'C') { // a C string
-				char* sptr = va_arg(argptr, char*);
-				char* fmt_no_c = (char*)v_malloc(k+4);
-				memcpy(fmt_no_c, fmt, k);
-				fmt_no_c[k-2]='C';
-				fmt_no_c[k-1]='"';
-				fmt_no_c[k]='%';
-				fmt_no_c[k+1]='s';
-				fmt_no_c[k+2]='"';
-				fmt_no_c[k+3]=0;
-				_STR_PRINT_ARG(fmt_no_c, &buf, &nbytes, &memsize, k + 4 + 100, sptr);
-				v_free(fmt_no_c);
-			} else if (f == 's') { // v string
-				string s = va_arg(argptr, string);
-				if (fmt[k-4] == '*') { // %*.*s
-					int fwidth = va_arg(argptr, int);
-					if (fwidth < 0)
-						fwidth -= (s.len - utf8_str_visible_length(s));
-					else
-						fwidth += (s.len - utf8_str_visible_length(s));
-					_STR_PRINT_ARG(fmt, &buf, &nbytes, &memsize, k+s.len-4, fwidth, s.len, s.str);
-				} else { // %.*s
-					_STR_PRINT_ARG(fmt, &buf, &nbytes, &memsize, k+s.len-4, s.len, s.str);
-				}
-			} else {
-				//v_panic(tos3('Invaid format specifier'));
-			}
-		} else {
-			_STR_PRINT_ARG(fmt, &buf, &nbytes, &memsize, k);
-		}
-		fmt += k+1;
-	}
-	va_end(argptr);
-	buf[nbytes] = 0;
-
-#ifdef DEBUG_ALLOC
-	//puts('_STR:');
-	puts(buf);
-#endif
-
-#if _VAUTOFREE
-	//g_cur_str = (byteptr)buf;
-#endif
-	return tos2((byteptr)buf);
-}
-
-string _STR_TMP(const char *fmt, ...) {
-	va_list argptr;
-	va_start(argptr, fmt);
-	size_t len = vsnprintf(0, 0, fmt, argptr) + 1;
-	va_end(argptr);
-	va_start(argptr, fmt);
-	vsprintf((char *)g_str_buf, fmt, argptr);
-	va_end(argptr);
-
-#ifdef DEBUG_ALLOC
-	//puts('_STR_TMP:');
-	//puts(g_str_buf);
-#endif
-	string res = tos(g_str_buf,  len);
-	res.is_lit = 1;
-	return res;
-
-} // endof _STR_TMP
 
 
 strings__Builder strings__new_builder(int initial_size) {
@@ -1765,7 +1760,7 @@ void strings__Builder_go_back_to(strings__Builder* b, int pos) {
 // Attr: [inline]
 inline void strings__Builder_writeln(strings__Builder* b, string s) {
 	array_push_many(&b->buf, s.str, s.len);
-	array_push((array*)&b->buf, _MOV((byte[]){ ((byte)(L'\n')) }));
+	array_push((array*)&b->buf, _MOV((byte[]){ ((byte)('\n')) }));
 	b->len += s.len + 1;
 }
 
@@ -1834,14 +1829,14 @@ f32 strings__dice_coefficient(string s1, string s2) {
 	if (s1.len == 0 || s2.len == 0) {
 		return 0.0;
 	}
-	if (string_eq(s1, s2)) {
+	if (string__eq(s1, s2)) {
 		return 1.0;
 	}
 	if (s1.len < 2 || s2.len < 2) {
 		return 0.0;
 	}
 	string a = (s1.len > s2.len ? (s1) : (s2));
-	string b = (string_eq(a, s1) ? (s2) : (s1));
+	string b = (string__eq(a, s1) ? (s2) : (s1));
 	Map_string_int first_bigrams = new_map(sizeof(string), sizeof(int), &map_hash_string, &map_eq_string, &map_clone_string, &map_free_string);
 	for (int i = 0; i < a.len - 1; ++i) {
 		string bigram = string_substr(a, i, i + 2);
@@ -1867,7 +1862,7 @@ string strings__repeat(byte c, int n) {
 	byte* bytes = v_malloc(n + 1);
 	{ // Unsafe block
 		memset(bytes, c, n);
-		bytes[n] = L'0';
+		bytes[n] = '0';
 	}
 	return byte_vstring_with_len(bytes, n);
 }
@@ -1888,7 +1883,7 @@ string strings__repeat_string(string s, int n) {
 		}
 	}
 	{ // Unsafe block
-		bytes[blen] = L'0';
+		bytes[blen] = '0';
 	}
 	return byte_vstring_with_len(bytes, blen);
 }
@@ -2269,11 +2264,11 @@ VV_LOCAL_SYMBOL bool strconv__is_digit(byte x) {
 }
 
 VV_LOCAL_SYMBOL bool strconv__is_space(byte x) {
-	return (x == L'\t' || x == L'\n' || x == L'\v' || x == L'\f' || x == L'\r' || x == L' ');
+	return (x == '\t' || x == '\n' || x == '\v' || x == '\f' || x == '\r' || x == ' ');
 }
 
 VV_LOCAL_SYMBOL bool strconv__is_exp(byte x) {
-	return (x == L'E' || x == L'e') == true;
+	return (x == 'E' || x == 'e') == true;
 }
 
 VV_LOCAL_SYMBOL multi_return_int_strconv__PrepNumber strconv__parser(string s) {
@@ -2287,11 +2282,11 @@ VV_LOCAL_SYMBOL multi_return_int_strconv__PrepNumber strconv__parser(string s) {
 		if (!(i < s.len && byte_is_space(string_at(s, i)))) break;
 		i++;
 	}
-	if (string_at(s, i) == L'-') {
+	if (string_at(s, i) == '-') {
 		pn.negative = true;
 		i++;
 	}
-	if (string_at(s, i) == L'+') {
+	if (string_at(s, i) == '+') {
 		i++;
 	}
 	for (;;) {
@@ -2305,7 +2300,7 @@ VV_LOCAL_SYMBOL multi_return_int_strconv__PrepNumber strconv__parser(string s) {
 		}
 		i++;
 	}
-	if ((i < s.len) && (string_at(s, i) == L'.')) {
+	if ((i < s.len) && (string_at(s, i) == '.')) {
 		i++;
 		for (;;) {
 			if (!(i < s.len && byte_is_digit(string_at(s, i)))) break;
@@ -2318,7 +2313,7 @@ VV_LOCAL_SYMBOL multi_return_int_strconv__PrepNumber strconv__parser(string s) {
 			i++;
 		}
 	}
-	if ((i < s.len) && ((string_at(s, i) == L'e') || (string_at(s, i) == L'E'))) {
+	if ((i < s.len) && ((string_at(s, i) == 'e') || (string_at(s, i) == 'E'))) {
 		i++;
 		if (i < s.len) {
 			if (string_at(s, i) == _const_strconv__c_plus) {
@@ -2381,29 +2376,29 @@ VV_LOCAL_SYMBOL u64 strconv__converter(strconv__PrepNumber* pn) {
 	s2 = ((u32)(0U));
 	for (;;) {
 		if (!(pn->exponent > 0)) break;
-		multi_return_u32_u32_u32 mr_5464 = strconv__lsl96(s2, s1, s0);
-		q2 = mr_5464.arg0;
-		q1 = mr_5464.arg1;
-		q0 = mr_5464.arg2;
-		multi_return_u32_u32_u32 mr_5510 = strconv__lsl96(q2, q1, q0);
-		r2 = mr_5510.arg0;
-		r1 = mr_5510.arg1;
-		r0 = mr_5510.arg2;
-		multi_return_u32_u32_u32 mr_5566 = strconv__lsl96(r2, r1, r0);
-		s2 = mr_5566.arg0;
-		s1 = mr_5566.arg1;
-		s0 = mr_5566.arg2;
-		multi_return_u32_u32_u32 mr_5622 = strconv__add96(s2, s1, s0, q2, q1, q0);
-		s2 = mr_5622.arg0;
-		s1 = mr_5622.arg1;
-		s0 = mr_5622.arg2;
+		multi_return_u32_u32_u32 mr_5662 = strconv__lsl96(s2, s1, s0);
+		q2 = mr_5662.arg0;
+		q1 = mr_5662.arg1;
+		q0 = mr_5662.arg2;
+		multi_return_u32_u32_u32 mr_5708 = strconv__lsl96(q2, q1, q0);
+		r2 = mr_5708.arg0;
+		r1 = mr_5708.arg1;
+		r0 = mr_5708.arg2;
+		multi_return_u32_u32_u32 mr_5764 = strconv__lsl96(r2, r1, r0);
+		s2 = mr_5764.arg0;
+		s1 = mr_5764.arg1;
+		s0 = mr_5764.arg2;
+		multi_return_u32_u32_u32 mr_5820 = strconv__add96(s2, s1, s0, q2, q1, q0);
+		s2 = mr_5820.arg0;
+		s1 = mr_5820.arg1;
+		s0 = mr_5820.arg2;
 		pn->exponent--;
 		for (;;) {
 			if (!(((s2 & mask28)) != 0U)) break;
-			multi_return_u32_u32_u32 mr_5745 = strconv__lsr96(s2, s1, s0);
-			q2 = mr_5745.arg0;
-			q1 = mr_5745.arg1;
-			q0 = mr_5745.arg2;
+			multi_return_u32_u32_u32 mr_5943 = strconv__lsr96(s2, s1, s0);
+			q2 = mr_5943.arg0;
+			q1 = mr_5943.arg1;
+			q0 = mr_5943.arg2;
 			binexp++;
 			s2 = q2;
 			s1 = q1;
@@ -2414,10 +2409,10 @@ VV_LOCAL_SYMBOL u64 strconv__converter(strconv__PrepNumber* pn) {
 		if (!(pn->exponent < 0)) break;
 		for (;;) {
 			if (!(!(((s2 & (((u32)(1U)) << 31U))) != 0U))) break;
-			multi_return_u32_u32_u32 mr_5892 = strconv__lsl96(s2, s1, s0);
-			q2 = mr_5892.arg0;
-			q1 = mr_5892.arg1;
-			q0 = mr_5892.arg2;
+			multi_return_u32_u32_u32 mr_6090 = strconv__lsl96(s2, s1, s0);
+			q2 = mr_6090.arg0;
+			q1 = mr_6090.arg1;
+			q0 = mr_6090.arg2;
 			binexp--;
 			s2 = q2;
 			s1 = q1;
@@ -2443,10 +2438,10 @@ VV_LOCAL_SYMBOL u64 strconv__converter(strconv__PrepNumber* pn) {
 	if (s2 != 0U || s1 != 0U || s0 != 0U) {
 		for (;;) {
 			if (!(((s2 & mask28)) == 0U)) break;
-			multi_return_u32_u32_u32 mr_6627 = strconv__lsl96(s2, s1, s0);
-			q2 = mr_6627.arg0;
-			q1 = mr_6627.arg1;
-			q0 = mr_6627.arg2;
+			multi_return_u32_u32_u32 mr_6825 = strconv__lsl96(s2, s1, s0);
+			q2 = mr_6825.arg0;
+			q1 = mr_6825.arg1;
+			q0 = mr_6825.arg2;
 			binexp--;
 			s2 = q2;
 			s1 = q1;
@@ -2458,25 +2453,25 @@ VV_LOCAL_SYMBOL u64 strconv__converter(strconv__PrepNumber* pn) {
 	u32 check_round_mask = ((u32)(0xFFFFFFFFU)) << ((u32)(nbit));
 	if (((s1 & check_round_bit)) != 0U) {
 		if (((s1 & ~check_round_mask)) != 0U) {
-			multi_return_u32_u32_u32 mr_7709 = strconv__add96(s2, s1, s0, 0U, check_round_bit, 0U);
-			s2 = mr_7709.arg0;
-			s1 = mr_7709.arg1;
-			s0 = mr_7709.arg2;
+			multi_return_u32_u32_u32 mr_7907 = strconv__add96(s2, s1, s0, 0U, check_round_bit, 0U);
+			s2 = mr_7907.arg0;
+			s1 = mr_7907.arg1;
+			s0 = mr_7907.arg2;
 		} else {
 			if (((s1 & (check_round_bit << ((u32)(1U))))) != 0U) {
-				multi_return_u32_u32_u32 mr_7901 = strconv__add96(s2, s1, s0, 0U, check_round_bit, 0U);
-				s2 = mr_7901.arg0;
-				s1 = mr_7901.arg1;
-				s0 = mr_7901.arg2;
+				multi_return_u32_u32_u32 mr_8099 = strconv__add96(s2, s1, s0, 0U, check_round_bit, 0U);
+				s2 = mr_8099.arg0;
+				s1 = mr_8099.arg1;
+				s0 = mr_8099.arg2;
 			}
 		}
 		s1 = (s1 & check_round_mask);
 		s0 = ((u32)(0U));
 		if ((s2 & (mask28 << ((u32)(1U)))) != 0U) {
-			multi_return_u32_u32_u32 mr_8105 = strconv__lsr96(s2, s1, s0);
-			q2 = mr_8105.arg0;
-			q1 = mr_8105.arg1;
-			q0 = mr_8105.arg2;
+			multi_return_u32_u32_u32 mr_8303 = strconv__lsr96(s2, s1, s0);
+			q2 = mr_8303.arg0;
+			q1 = mr_8303.arg1;
+			q0 = mr_8303.arg2;
 			binexp--;
 			s2 = q2;
 			s1 = q1;
@@ -2512,9 +2507,9 @@ f64 strconv__atof64(string s) {
 	strconv__PrepNumber pn = (strconv__PrepNumber){.negative = 0,.exponent = 0,.mantissa = 0,};
 	int res_parsing = 0;
 	strconv__Float64u res = (strconv__Float64u){0};
-	multi_return_int_strconv__PrepNumber mr_9140 = strconv__parser(s);
-	res_parsing = mr_9140.arg0;
-	pn = mr_9140.arg1;
+	multi_return_int_strconv__PrepNumber mr_9339 = strconv__parser(s);
+	res_parsing = mr_9339.arg0;
+	pn = mr_9339.arg1;
 
 	if (res_parsing == (_const_strconv__parser_ok)) {
 		res.u = strconv__converter((voidptr)&/*qq*/pn);
@@ -2541,18 +2536,18 @@ f64 strconv__atof_quick(string s) {
 	f64 sign = ((f64)(1.0));
 	int i = 0;
 	for (;;) {
-		if (!(i < s.len && string_at(s, i) == L' ')) break;
+		if (!(i < s.len && string_at(s, i) == ' ')) break;
 		i++;
 	}
 	if (i < s.len) {
-		if (string_at(s, i) == L'-') {
+		if (string_at(s, i) == '-') {
 			sign = -1.0;
 			i++;
-		} else if (string_at(s, i) == L'+') {
+		} else if (string_at(s, i) == '+') {
 			i++;
 		}
 	}
-	if (string_at(s, i) == L'i' && i + 2 < s.len && string_at(s, i + 1) == L'n' && string_at(s, i + 2) == L'f') {
+	if (string_at(s, i) == 'i' && i + 2 < s.len && string_at(s, i + 1) == 'n' && string_at(s, i + 2) == 'f') {
 		if (sign > 0.0) {
 			f.u = _const_strconv__double_plus_infinity;
 		} else {
@@ -2561,7 +2556,7 @@ f64 strconv__atof_quick(string s) {
 		return f.f;
 	}
 	for (;;) {
-		if (!(i < s.len && string_at(s, i) == L'0')) break;
+		if (!(i < s.len && string_at(s, i) == '0')) break;
 		i++;
 		if (i >= s.len) {
 			if (sign > 0.0) {
@@ -2573,41 +2568,41 @@ f64 strconv__atof_quick(string s) {
 		}
 	}
 	for (;;) {
-		if (!(i < s.len && (string_at(s, i) >= L'0' && string_at(s, i) <= L'9'))) break;
+		if (!(i < s.len && (string_at(s, i) >= '0' && string_at(s, i) <= '9'))) break;
 		f.f *= ((f64)(10.0));
-		f.f += ((f64)(string_at(s, i) - L'0'));
+		f.f += ((f64)(string_at(s, i) - '0'));
 		i++;
 	}
-	if (i < s.len && string_at(s, i) == L'.') {
+	if (i < s.len && string_at(s, i) == '.') {
 		i++;
 		f64 frac_mul = ((f64)(0.1));
 		for (;;) {
-			if (!(i < s.len && (string_at(s, i) >= L'0' && string_at(s, i) <= L'9'))) break;
-			f.f += ((f64)(string_at(s, i) - L'0')) * frac_mul;
+			if (!(i < s.len && (string_at(s, i) >= '0' && string_at(s, i) <= '9'))) break;
+			f.f += ((f64)(string_at(s, i) - '0')) * frac_mul;
 			frac_mul *= ((f64)(0.1));
 			i++;
 		}
 	}
-	if (i < s.len && (string_at(s, i) == L'e' || string_at(s, i) == L'E')) {
+	if (i < s.len && (string_at(s, i) == 'e' || string_at(s, i) == 'E')) {
 		i++;
 		int exp = 0;
 		int exp_sign = 1;
 		if (i < s.len) {
-			if (string_at(s, i) == L'-') {
+			if (string_at(s, i) == '-') {
 				exp_sign = -1;
 				i++;
-			} else if (string_at(s, i) == L'+') {
+			} else if (string_at(s, i) == '+') {
 				i++;
 			}
 		}
 		for (;;) {
-			if (!(i < s.len && string_at(s, i) == L'0')) break;
+			if (!(i < s.len && string_at(s, i) == '0')) break;
 			i++;
 		}
 		for (;;) {
-			if (!(i < s.len && (string_at(s, i) >= L'0' && string_at(s, i) <= L'9'))) break;
+			if (!(i < s.len && (string_at(s, i) >= '0' && string_at(s, i) <= '9'))) break;
 			exp *= 10;
-			exp += ((int)(string_at(s, i) - L'0'));
+			exp += ((int)(string_at(s, i) - '0'));
 			i++;
 		}
 		if (exp_sign == 1) {
@@ -2642,7 +2637,7 @@ f64 strconv__atof_quick(string s) {
 }
 
 byte strconv__byte_to_lower(byte c) {
-	return (c | (L'x' - L'X'));
+	return (c | ('x' - 'X'));
 }
 
 u64 strconv__common_parse_uint(string s, int _base, int _bit_size, bool error_on_non_digit, bool error_on_high_digit) {
@@ -2668,17 +2663,17 @@ multi_return_u64_int strconv__common_parse_uint2(string s, int _base, int _bit_s
 	if (2 <= base && base <= 36) {
 	} else if (base == 0) {
 		base = 10;
-		if (string_at(s, 0) == L'0') {
-			if (s.len >= 3 && strconv__byte_to_lower(string_at(s, 1)) == L'b') {
+		if (string_at(s, 0) == '0') {
+			if (s.len >= 3 && strconv__byte_to_lower(string_at(s, 1)) == 'b') {
 				base = 2;
 				start_index += 2;
-			} else if (s.len >= 3 && strconv__byte_to_lower(string_at(s, 1)) == L'o') {
+			} else if (s.len >= 3 && strconv__byte_to_lower(string_at(s, 1)) == 'o') {
 				base = 8;
 				start_index += 2;
-			} else if (s.len >= 3 && strconv__byte_to_lower(string_at(s, 1)) == L'x') {
+			} else if (s.len >= 3 && strconv__byte_to_lower(string_at(s, 1)) == 'x') {
 				base = 16;
 				start_index += 2;
-			} else if (s.len >= 2 && (string_at(s, 1) >= L'0' && string_at(s, 1) <= L'9')) {
+			} else if (s.len >= 2 && (string_at(s, 1) >= '0' && string_at(s, 1) <= '9')) {
 				base = 10;
 				start_index++;
 			} else {
@@ -2701,12 +2696,12 @@ multi_return_u64_int strconv__common_parse_uint2(string s, int _base, int _bit_s
 		byte c = string_at(s, i);
 		byte cl = strconv__byte_to_lower(c);
 		byte d = ((byte)(0));
-		if (c == L'_' && base0) {
+		if (c == '_' && base0) {
 			continue;
-		} else if (L'0' <= c && c <= L'9') {
-			d = c - L'0';
-		} else if (L'a' <= cl && cl <= L'z') {
-			d = cl - L'a' + 10;
+		} else if ('0' <= c && c <= '9') {
+			d = c - '0';
+		} else if ('a' <= cl && cl <= 'z') {
+			d = cl - 'a' + 10;
 		} else {
 			return (multi_return_u64_int){.arg0=n, .arg1=i + 1};
 		}
@@ -2737,9 +2732,9 @@ i64 strconv__common_parse_int(string _s, int base, int _bit_size, bool error_on_
 		return ((i64)(0));
 	}
 	bool neg = false;
-	if (string_at(s, 0) == L'+') {
+	if (string_at(s, 0) == '+') {
 		s = string_substr(s, 1, s.len);
-	} else if (string_at(s, 0) == L'-') {
+	} else if (string_at(s, 0) == '-') {
 		neg = true;
 		s = string_substr(s, 1, s.len);
 	}
@@ -2766,26 +2761,26 @@ i64 strconv__parse_int(string _s, int base, int _bit_size) {
 
 Option_int strconv__atoi(string s) {
 	if ((s).len == 0) {
-		return (Option_int){ .state=2, .err=v_error(_STR("strconv.atoi: parsing \"%.*s\000\": invalid syntax ", 2, s)), .data={0} };
+		return (Option_int){ .state=2, .err=v_error( str_intp(2, _MOV((StrIntpData[]){{_SLIT("strconv.atoi: parsing \""), 0xfe10, {.d_s = s}}, {_SLIT("\": invalid syntax "), 0, { .d_c = 0 }}})) ), .data={0} };
 	}
 	if ((_const_strconv__int_size == 32 && (0 < s.len && s.len < 10)) || (_const_strconv__int_size == 64 && (0 < s.len && s.len < 19))) {
 		int start_idx = 0;
-		if (string_at(s, 0) == L'-' || string_at(s, 0) == L'+') {
+		if (string_at(s, 0) == '-' || string_at(s, 0) == '+') {
 			start_idx++;
 			if (s.len - start_idx < 1) {
-				return (Option_int){ .state=2, .err=v_error(_STR("strconv.atoi: parsing \"%.*s\000\": invalid syntax ", 2, s)), .data={0} };
+				return (Option_int){ .state=2, .err=v_error( str_intp(2, _MOV((StrIntpData[]){{_SLIT("strconv.atoi: parsing \""), 0xfe10, {.d_s = s}}, {_SLIT("\": invalid syntax "), 0, { .d_c = 0 }}})) ), .data={0} };
 			}
 		}
 		int n = 0;
 		for (int i = start_idx; i < s.len; ++i) {
-			rune ch = string_at(s, i) - L'0';
+			rune ch = string_at(s, i) - '0';
 			if (ch > 9) {
-				return (Option_int){ .state=2, .err=v_error(_STR("strconv.atoi: parsing \"%.*s\000\": invalid syntax ", 2, s)), .data={0} };
+				return (Option_int){ .state=2, .err=v_error( str_intp(2, _MOV((StrIntpData[]){{_SLIT("strconv.atoi: parsing \""), 0xfe10, {.d_s = s}}, {_SLIT("\": invalid syntax "), 0, { .d_c = 0 }}})) ), .data={0} };
 			}
 			n = n * 10 + ((int)(ch));
 		}
 		Option_int _t104; /* if prepend */
-		if (string_at(s, 0) == L'-') {
+		if (string_at(s, 0) == '-') {
 			opt_ok(&(int[]) { -n }, (Option*)(&_t104), sizeof(int));
 		} else {
 			opt_ok(&(int[]) { n }, (Option*)(&_t104), sizeof(int));
@@ -2799,35 +2794,35 @@ Option_int strconv__atoi(string s) {
 }
 
 VV_LOCAL_SYMBOL bool strconv__underscore_ok(string s) {
-	rune saw = L'^';
+	rune saw = '^';
 	int i = 0;
-	if (s.len >= 1 && (string_at(s, 0) == L'-' || string_at(s, 0) == L'+')) {
+	if (s.len >= 1 && (string_at(s, 0) == '-' || string_at(s, 0) == '+')) {
 		i++;
 	}
 	bool hex = false;
-	if (s.len - i >= 2 && string_at(s, i) == L'0' && (strconv__byte_to_lower(string_at(s, i + 1)) == L'b' || strconv__byte_to_lower(string_at(s, i + 1)) == L'o' || strconv__byte_to_lower(string_at(s, i + 1)) == L'x')) {
-		saw = L'0';
-		hex = strconv__byte_to_lower(string_at(s, i + 1)) == L'x';
+	if (s.len - i >= 2 && string_at(s, i) == '0' && (strconv__byte_to_lower(string_at(s, i + 1)) == 'b' || strconv__byte_to_lower(string_at(s, i + 1)) == 'o' || strconv__byte_to_lower(string_at(s, i + 1)) == 'x')) {
+		saw = '0';
+		hex = strconv__byte_to_lower(string_at(s, i + 1)) == 'x';
 		i += 2;
 	}
 	for (; i < s.len; i++) {
-		if ((L'0' <= string_at(s, i) && string_at(s, i) <= L'9') || (hex && L'a' <= strconv__byte_to_lower(string_at(s, i)) && strconv__byte_to_lower(string_at(s, i)) <= L'f')) {
-			saw = L'0';
+		if (('0' <= string_at(s, i) && string_at(s, i) <= '9') || (hex && 'a' <= strconv__byte_to_lower(string_at(s, i)) && strconv__byte_to_lower(string_at(s, i)) <= 'f')) {
+			saw = '0';
 			continue;
 		}
-		if (string_at(s, i) == L'_') {
-			if (saw != L'0') {
+		if (string_at(s, i) == '_') {
+			if (saw != '0') {
 				return false;
 			}
-			saw = L'_';
+			saw = '_';
 			continue;
 		}
-		if (saw == L'_') {
+		if (saw == '_') {
 			return false;
 		}
-		saw = L'!';
+		saw = '!';
 	}
-	return saw != L'_';
+	return saw != '_';
 }
 
 // Attr: [direct_array_access]
@@ -2844,7 +2839,7 @@ string strconv__Dec32_get_string_32(strconv__Dec32 d, bool neg, int i_n_digit, i
 	Array_byte buf = __new_array_with_default(((int)(out_len + 5 + 1 + 1)), 0, sizeof(byte), 0);
 	int i = 0;
 	if (neg) {
-		((byte*)buf.data)[i] = L'-';
+		((byte*)buf.data)[i] = '-';
 		i++;
 	}
 	int disp = 0;
@@ -2860,7 +2855,7 @@ string strconv__Dec32_get_string_32(strconv__Dec32 d, bool neg, int i_n_digit, i
 	int x = 0;
 	for (;;) {
 		if (!(x < (out_len - disp - 1))) break;
-		((byte*)buf.data)[y - x] = L'0' + ((byte)(out % 10U));
+		((byte*)buf.data)[y - x] = '0' + ((byte)(out % 10U));
 		out /= 10U;
 		i++;
 		x++;
@@ -2872,36 +2867,36 @@ string strconv__Dec32_get_string_32(strconv__Dec32 d, bool neg, int i_n_digit, i
 		}
 	}
 	if (out_len >= 1) {
-		((byte*)buf.data)[y - x] = L'.';
+		((byte*)buf.data)[y - x] = '.';
 		x++;
 		i++;
 	}
 	if (y - x >= 0) {
-		((byte*)buf.data)[y - x] = L'0' + ((byte)(out % 10U));
+		((byte*)buf.data)[y - x] = '0' + ((byte)(out % 10U));
 		i++;
 	}
 	for (;;) {
 		if (!(fw_zeros > 0)) break;
-		((byte*)buf.data)[i] = L'0';
+		((byte*)buf.data)[i] = '0';
 		i++;
 		fw_zeros--;
 	}
-	((byte*)buf.data)[i] = L'e';
+	((byte*)buf.data)[i] = 'e';
 	i++;
 	int exp = d.e + out_len_original - 1;
 	if (exp < 0) {
-		((byte*)buf.data)[i] = L'-';
+		((byte*)buf.data)[i] = '-';
 		i++;
 		exp = -exp;
 	} else {
-		((byte*)buf.data)[i] = L'+';
+		((byte*)buf.data)[i] = '+';
 		i++;
 	}
 	int d1 = exp % 10;
 	int d0 = exp / 10;
-	((byte*)buf.data)[i] = L'0' + ((byte)(d0));
+	((byte*)buf.data)[i] = '0' + ((byte)(d0));
 	i++;
-	((byte*)buf.data)[i] = L'0' + ((byte)(d1));
+	((byte*)buf.data)[i] = '0' + ((byte)(d1));
 	i++;
 	((byte*)buf.data)[i] = 0;
 	return tos(((byteptr)(&((byte*)buf.data)[0])), i);
@@ -2927,7 +2922,7 @@ VV_LOCAL_SYMBOL multi_return_strconv__Dec32_bool strconv__f32_to_decimal_exact_i
 	return (multi_return_strconv__Dec32_bool){.arg0=d, .arg1=true};
 }
 
-strconv__Dec32 strconv__f32_to_decimal(u32 mant, u32 exp) {
+VV_LOCAL_SYMBOL strconv__Dec32 strconv__f32_to_decimal(u32 mant, u32 exp) {
 	int e2 = 0;
 	u32 m2 = ((u32)(0U));
 	if (exp == 0U) {
@@ -3050,9 +3045,9 @@ string strconv__f32_to_str(f32 f, int n_digit) {
 	if ((exp == _const_strconv__maxexp32) || (exp == 0U && mant == 0U)) {
 		return strconv__get_string_special(neg, exp == 0U, mant == 0U);
 	}
-	multi_return_strconv__Dec32_bool mr_8525 = strconv__f32_to_decimal_exact_int(mant, exp);
-	strconv__Dec32 d = mr_8525.arg0;
-	bool ok = mr_8525.arg1;
+	multi_return_strconv__Dec32_bool mr_8521 = strconv__f32_to_decimal_exact_int(mant, exp);
+	strconv__Dec32 d = mr_8521.arg0;
+	bool ok = mr_8521.arg1;
 	if (!ok) {
 		d = strconv__f32_to_decimal(mant, exp);
 	}
@@ -3069,9 +3064,9 @@ string strconv__f32_to_str_pad(f32 f, int n_digit) {
 	if ((exp == _const_strconv__maxexp32) || (exp == 0U && mant == 0U)) {
 		return strconv__get_string_special(neg, exp == 0U, mant == 0U);
 	}
-	multi_return_strconv__Dec32_bool mr_9250 = strconv__f32_to_decimal_exact_int(mant, exp);
-	strconv__Dec32 d = mr_9250.arg0;
-	bool ok = mr_9250.arg1;
+	multi_return_strconv__Dec32_bool mr_9246 = strconv__f32_to_decimal_exact_int(mant, exp);
+	strconv__Dec32 d = mr_9246.arg0;
+	bool ok = mr_9246.arg1;
 	if (!ok) {
 		d = strconv__f32_to_decimal(mant, exp);
 	}
@@ -3093,7 +3088,7 @@ VV_LOCAL_SYMBOL string strconv__Dec64_get_string_64(strconv__Dec64 d, bool neg, 
 	Array_byte buf = __new_array_with_default((out_len + 6 + 1 + 1 + fw_zeros), 0, sizeof(byte), 0);
 	int i = 0;
 	if (neg) {
-		((byte*)buf.data)[i] = L'-';
+		((byte*)buf.data)[i] = '-';
 		i++;
 	}
 	int disp = 0;
@@ -3113,7 +3108,7 @@ VV_LOCAL_SYMBOL string strconv__Dec64_get_string_64(strconv__Dec64 d, bool neg, 
 	int x = 0;
 	for (;;) {
 		if (!(x < (out_len - disp - 1))) break;
-		((byte*)buf.data)[y - x] = L'0' + ((byte)(out % 10U));
+		((byte*)buf.data)[y - x] = '0' + ((byte)(out % 10U));
 		out /= 10U;
 		i++;
 		x++;
@@ -3125,29 +3120,29 @@ VV_LOCAL_SYMBOL string strconv__Dec64_get_string_64(strconv__Dec64 d, bool neg, 
 		}
 	}
 	if (out_len >= 1) {
-		((byte*)buf.data)[y - x] = L'.';
+		((byte*)buf.data)[y - x] = '.';
 		x++;
 		i++;
 	}
 	if (y - x >= 0) {
-		((byte*)buf.data)[y - x] = L'0' + ((byte)(out % 10U));
+		((byte*)buf.data)[y - x] = '0' + ((byte)(out % 10U));
 		i++;
 	}
 	for (;;) {
 		if (!(fw_zeros > 0)) break;
-		((byte*)buf.data)[i] = L'0';
+		((byte*)buf.data)[i] = '0';
 		i++;
 		fw_zeros--;
 	}
-	((byte*)buf.data)[i] = L'e';
+	((byte*)buf.data)[i] = 'e';
 	i++;
 	int exp = d_exp + out_len_original - 1;
 	if (exp < 0) {
-		((byte*)buf.data)[i] = L'-';
+		((byte*)buf.data)[i] = '-';
 		i++;
 		exp = -exp;
 	} else {
-		((byte*)buf.data)[i] = L'+';
+		((byte*)buf.data)[i] = '+';
 		i++;
 	}
 	int d2 = exp % 10;
@@ -3155,12 +3150,12 @@ VV_LOCAL_SYMBOL string strconv__Dec64_get_string_64(strconv__Dec64 d, bool neg, 
 	int d1 = exp % 10;
 	int d0 = exp / 10;
 	if (d0 > 0) {
-		((byte*)buf.data)[i] = L'0' + ((byte)(d0));
+		((byte*)buf.data)[i] = '0' + ((byte)(d0));
 		i++;
 	}
-	((byte*)buf.data)[i] = L'0' + ((byte)(d1));
+	((byte*)buf.data)[i] = '0' + ((byte)(d1));
 	i++;
-	((byte*)buf.data)[i] = L'0' + ((byte)(d2));
+	((byte*)buf.data)[i] = '0' + ((byte)(d2));
 	i++;
 	((byte*)buf.data)[i] = 0;
 	return tos(((byteptr)(&((byte*)buf.data)[0])), i);
@@ -3375,6 +3370,425 @@ string strconv__format_str(string s, strconv__BF_param p) {
 	return strings__Builder_str(&res);
 }
 
+void strconv__format_str_sb(string s, strconv__BF_param p, strings__Builder* sb) {
+	if (p.len0 <= 0) {
+		strings__Builder_write_string(sb, s);
+		return;
+	}
+	int dif = p.len0 - utf8_str_visible_length(s);
+	if (dif <= 0) {
+		strings__Builder_write_string(sb, s);
+		return;
+	}
+	if (p.allign == strconv__Align_text_right) {
+		for (int i1 = 0; i1 < dif; i1++) {
+			strings__Builder_write_b(sb, p.pad_ch);
+		}
+	}
+	strings__Builder_write_string(sb, s);
+	if (p.allign == strconv__Align_text_left) {
+		for (int i1 = 0; i1 < dif; i1++) {
+			strings__Builder_write_b(sb, p.pad_ch);
+		}
+	}
+}
+
+// Attr: [direct_array_access]
+void strconv__format_dec_sb(u64 d, strconv__BF_param p, strings__Builder* res) {
+	int n_char = strconv__dec_digits(d);
+	int sign_len = (!p.positive || p.sign_flag ? (1) : (0));
+	int number_len = sign_len + n_char;
+	int dif = p.len0 - number_len;
+	bool sign_written = false;
+	if (p.allign == strconv__Align_text_right) {
+		if (p.pad_ch == '0') {
+			if (p.positive) {
+				if (p.sign_flag) {
+					strings__Builder_write_b(res, '+');
+					sign_written = true;
+				}
+			} else {
+				strings__Builder_write_b(res, '-');
+				sign_written = true;
+			}
+		}
+		for (int i1 = 0; i1 < dif; i1++) {
+			strings__Builder_write_b(res, p.pad_ch);
+		}
+	}
+	if (!sign_written) {
+		if (p.positive) {
+			if (p.sign_flag) {
+				strings__Builder_write_b(res, '+');
+			}
+		} else {
+			strings__Builder_write_b(res, '-');
+		}
+	}
+	Array_fixed_byte_32 buf = {0};
+	int i = 20;
+	u64 n = d;
+	u64 d_i = ((u64)(0U));
+	if (n > 0U) {
+		for (;;) {
+			if (!(n > 0U)) break;
+			u64 n1 = n / 100U;
+			d_i = (n - (n1 * 100U)) << 1U;
+			n = n1;
+			{ // Unsafe block
+				buf[i] = _const_strconv__digit_pairs.str[d_i];
+			}
+			i--;
+			d_i++;
+			{ // Unsafe block
+				buf[i] = _const_strconv__digit_pairs.str[d_i];
+			}
+			i--;
+		}
+		i++;
+		if (d_i < 20U) {
+			i++;
+		}
+		strings__Builder_write_ptr(res, &buf[i], n_char);
+	} else {
+		strings__Builder_write_b(res, '0');
+	}
+	if (p.allign == strconv__Align_text_left) {
+		for (int i1 = 0; i1 < dif; i1++) {
+			strings__Builder_write_b(res, p.pad_ch);
+		}
+	}
+	return;
+}
+
+// Attr: [manualfree]
+// Attr: [direct_array_access]
+string strconv__f64_to_str_lnd1(f64 f, int dec_digit) {
+	{ // Unsafe block
+		string s = strconv__f64_to_str(f + ((f64*)_const_strconv__dec_round.data)[dec_digit], 18);
+		if (s.len > 2 && (s.str[ 0] == 'n' || s.str[ 1] == 'i')) {
+			return s;
+		}
+		bool m_sgn_flag = false;
+		int sgn = 1;
+		Array_fixed_byte_26 b = {0};
+		int d_pos = 1;
+		int i = 0;
+		int i1 = 0;
+		int exp = 0;
+		int exp_sgn = 1;
+		int dot_res_sp = -1;
+		for (int _t133 = 0; _t133 < s.len; ++_t133) {
+			byte c = s.str[_t133];
+			if (c == '-') {
+				sgn = -1;
+				i++;
+			} else if (c == '+') {
+				sgn = 1;
+				i++;
+			} else if (c >= '0' && c <= '9') {
+				b[i1] = c;
+				i1++;
+				i++;
+			} else if (c == '.') {
+				if (sgn > 0) {
+					d_pos = i;
+				} else {
+					d_pos = i - 1;
+				}
+				i++;
+			} else if (c == 'e') {
+				i++;
+				break;
+			} else {
+				string_free(&s);
+				return _SLIT("[Float conversion error!!]");
+			}
+		}
+		b[i1] = 0;
+		if (s.str[ i] == '-') {
+			exp_sgn = -1;
+			i++;
+		} else if (s.str[ i] == '+') {
+			exp_sgn = 1;
+			i++;
+		}
+		int c = i;
+		for (;;) {
+			if (!(c < s.len)) break;
+			exp = exp * 10 + ((int)(s.str[ c] - '0'));
+			c++;
+		}
+		Array_byte res = __new_array_with_default(exp + 32, 0, sizeof(byte), &(byte[]){0});
+		int r_i = 0;
+		string_free(&s);
+		if (sgn == 1) {
+			if (m_sgn_flag) {
+				((byte*)res.data)[r_i] = '+';
+				r_i++;
+			}
+		} else {
+			((byte*)res.data)[r_i] = '-';
+			r_i++;
+		}
+		i = 0;
+		if (exp_sgn >= 0) {
+			for (;;) {
+				if (!(b[i] != 0)) break;
+				((byte*)res.data)[r_i] = b[i];
+				r_i++;
+				i++;
+				if (i >= d_pos && exp >= 0) {
+					if (exp == 0) {
+						dot_res_sp = r_i;
+						((byte*)res.data)[r_i] = '.';
+						r_i++;
+					}
+					exp--;
+				}
+			}
+			for (;;) {
+				if (!(exp >= 0)) break;
+				((byte*)res.data)[r_i] = '0';
+				r_i++;
+				exp--;
+			}
+		} else {
+			bool dot_p = true;
+			for (;;) {
+				if (!(exp > 0)) break;
+				((byte*)res.data)[r_i] = '0';
+				r_i++;
+				exp--;
+				if (dot_p) {
+					dot_res_sp = r_i;
+					((byte*)res.data)[r_i] = '.';
+					r_i++;
+					dot_p = false;
+				}
+			}
+			for (;;) {
+				if (!(b[i] != 0)) break;
+				((byte*)res.data)[r_i] = b[i];
+				r_i++;
+				i++;
+			}
+		}
+		if (dec_digit <= 0) {
+			string tmp_res = string_clone(tos(res.data, dot_res_sp));
+			array_free(&res);
+			return tmp_res;
+		}
+		if (dot_res_sp >= 0) {
+			if ((r_i - dot_res_sp) > dec_digit) {
+				r_i = dot_res_sp + dec_digit + 1;
+			}
+			((byte*)res.data)[r_i] = 0;
+			string tmp_res = string_clone(tos(res.data, r_i));
+			array_free(&res);
+			return tmp_res;
+		} else {
+			if (dec_digit > 0) {
+				int c1 = 0;
+				((byte*)res.data)[r_i] = '.';
+				r_i++;
+				for (;;) {
+					if (!(c1 < dec_digit)) break;
+					((byte*)res.data)[r_i] = '0';
+					r_i++;
+					c1++;
+				}
+				((byte*)res.data)[r_i] = 0;
+			}
+			string tmp_res = string_clone(tos(res.data, r_i));
+			array_free(&res);
+			return tmp_res;
+		}
+	}
+	return (string){.str=(byteptr)"", .is_lit=1};
+}
+
+// Attr: [manualfree]
+string strconv__format_fl(f64 f, strconv__BF_param p) {
+	{ // Unsafe block
+		string s = _SLIT("");
+		string fs = strconv__f64_to_str_lnd1((f >= 0.0 ? (f) : (-f)), p.len1);
+		if (string_at(fs, 0) == '[') {
+			string_free(&s);
+			return fs;
+		}
+		if (p.rm_tail_zero) {
+			string tmp = fs;
+			fs = strconv__remove_tail_zeros(fs);
+			string_free(&tmp);
+		}
+		strings__Builder res = strings__new_builder((p.len0 > fs.len ? (p.len0) : (fs.len)));
+		int sign_len_diff = 0;
+		if (p.pad_ch == '0') {
+			if (p.positive) {
+				if (p.sign_flag) {
+					strings__Builder_write_b(&res, '+');
+					sign_len_diff = -1;
+				}
+			} else {
+				strings__Builder_write_b(&res, '-');
+				sign_len_diff = -1;
+			}
+			string tmp = s;
+			s = string_clone(fs);
+			string_free(&tmp);
+		} else {
+			if (p.positive) {
+				if (p.sign_flag) {
+					string tmp = s;
+					s = string__plus(_SLIT("+"), fs);
+					string_free(&tmp);
+				} else {
+					string tmp = s;
+					s = string_clone(fs);
+					string_free(&tmp);
+				}
+			} else {
+				string tmp = s;
+				s = string__plus(_SLIT("-"), fs);
+				string_free(&tmp);
+			}
+		}
+		int dif = p.len0 - s.len + sign_len_diff;
+		if (p.allign == strconv__Align_text_right) {
+			for (int i1 = 0; i1 < dif; i1++) {
+				strings__Builder_write_b(&res, p.pad_ch);
+			}
+		}
+		strings__Builder_write_string(&res, s);
+		if (p.allign == strconv__Align_text_left) {
+			for (int i1 = 0; i1 < dif; i1++) {
+				strings__Builder_write_b(&res, p.pad_ch);
+			}
+		}
+		string_free(&s);
+		string_free(&fs);
+		string tmp_res = strings__Builder_str(&res);
+		strings__Builder_free(&res);
+		return tmp_res;
+	}
+	return (string){.str=(byteptr)"", .is_lit=1};
+}
+
+// Attr: [manualfree]
+string strconv__format_es(f64 f, strconv__BF_param p) {
+	{ // Unsafe block
+		string s = _SLIT("");
+		string fs = strconv__f64_to_str_pad((f > 0 ? (f) : (-f)), p.len1);
+		if (p.rm_tail_zero) {
+			fs = strconv__remove_tail_zeros(fs);
+		}
+		strings__Builder res = strings__new_builder((p.len0 > fs.len ? (p.len0) : (fs.len)));
+		int sign_len_diff = 0;
+		if (p.pad_ch == '0') {
+			if (p.positive) {
+				if (p.sign_flag) {
+					strings__Builder_write_b(&res, '+');
+					sign_len_diff = -1;
+				}
+			} else {
+				strings__Builder_write_b(&res, '-');
+				sign_len_diff = -1;
+			}
+			string tmp = s;
+			s = string_clone(fs);
+			string_free(&tmp);
+		} else {
+			if (p.positive) {
+				if (p.sign_flag) {
+					string tmp = s;
+					s = string__plus(_SLIT("+"), fs);
+					string_free(&tmp);
+				} else {
+					string tmp = s;
+					s = string_clone(fs);
+					string_free(&tmp);
+				}
+			} else {
+				string tmp = s;
+				s = string__plus(_SLIT("-"), fs);
+				string_free(&tmp);
+			}
+		}
+		int dif = p.len0 - s.len + sign_len_diff;
+		if (p.allign == strconv__Align_text_right) {
+			for (int i1 = 0; i1 < dif; i1++) {
+				strings__Builder_write_b(&res, p.pad_ch);
+			}
+		}
+		strings__Builder_write_string(&res, s);
+		if (p.allign == strconv__Align_text_left) {
+			for (int i1 = 0; i1 < dif; i1++) {
+				strings__Builder_write_b(&res, p.pad_ch);
+			}
+		}
+		string_free(&s);
+		string_free(&fs);
+		string tmp_res = strings__Builder_str(&res);
+		strings__Builder_free(&res);
+		return tmp_res;
+	}
+	return (string){.str=(byteptr)"", .is_lit=1};
+}
+
+// Attr: [direct_array_access]
+string strconv__remove_tail_zeros(string s) {
+	{ // Unsafe block
+		byte* buf = v_malloc(s.len + 1);
+		int i_d = 0;
+		int i_s = 0;
+		for (;;) {
+			if (!(i_s < s.len && !(s.str[ i_s] == '-' || s.str[ i_s] == '+') && s.str[ i_s] >= '9' && s.str[ i_s] <= '0')) break;
+			buf[i_d] = s.str[ i_s];
+			i_s++;
+			i_d++;
+		}
+		if (i_s < s.len && (s.str[ i_s] == '-' || s.str[ i_s] == '+')) {
+			buf[i_d] = s.str[ i_s];
+			i_s++;
+			i_d++;
+		}
+		for (;;) {
+			if (!(i_s < s.len && s.str[ i_s] >= '0' && s.str[ i_s] <= '9')) break;
+			buf[i_d] = s.str[ i_s];
+			i_s++;
+			i_d++;
+		}
+		if (i_s < s.len && s.str[ i_s] == '.') {
+			int i_s1 = i_s + 1;
+			int sum = 0;
+			for (;;) {
+				if (!(i_s1 < s.len && s.str[ i_s1] >= '0' && s.str[ i_s1] <= '9')) break;
+				sum += s.str[ i_s1] - ((byte)('0'));
+				i_s1++;
+			}
+			if (sum > 0) {
+				for (int c_i = i_s; c_i < i_s1; ++c_i) {
+					buf[i_d] = s.str[ c_i];
+					i_d++;
+				}
+			}
+			i_s = i_s1;
+		}
+		if (s.str[ i_s] != '.') {
+			for (;;) {
+				if (!(i_s < s.len)) break;
+				buf[i_d] = s.str[ i_s];
+				i_s++;
+				i_d++;
+			}
+		}
+		buf[i_d] = 0;
+		return tos(buf, i_d + 1);
+	}
+	return (string){.str=(byteptr)"", .is_lit=1};
+}
+
 // Attr: [inline]
 inline string strconv__ftoa_64(f64 f) {
 	return strconv__f64_to_str(f, 17);
@@ -3395,44 +3809,60 @@ inline string strconv__ftoa_long_32(f32 f) {
 	return strconv__f32_to_str_l(f);
 }
 
+// Attr: [manualfree]
 string strconv__format_int(i64 n, int radix) {
-	if (radix < 2 || radix > 36) {
-		v_panic(_STR("invalid radix: %"PRId32"\000 . It should be => 2 and <= 36", 2, radix));
+	{ // Unsafe block
+		if (radix < 2 || radix > 36) {
+			v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("invalid radix: "), 0xfe07, {.d_i32 = radix}}, {_SLIT(" . It should be => 2 and <= 36"), 0, { .d_c = 0 }}})) );
+		}
+		if (n == 0) {
+			return _SLIT("0");
+		}
+		i64 n_copy = n;
+		string sign = _SLIT("");
+		if (n < 0) {
+			sign = _SLIT("-");
+			n_copy = -n_copy;
+		}
+		string res = _SLIT("");
+		for (;;) {
+			if (!(n_copy != 0)) break;
+			string tmp_0 = res;
+			string tmp_1 = byte_ascii_str(string_at(_const_strconv__base_digits, n_copy % radix));
+			res = string__plus(tmp_1, res);
+			string_free(&tmp_0);
+			string_free(&tmp_1);
+			n_copy /= radix;
+		}
+		return  str_intp(3, _MOV((StrIntpData[]){{_SLIT0, 0xfe10, {.d_s = sign}}, {_SLIT0, 0xfe10, {.d_s = res}}, {_SLIT0, 0, { .d_c = 0 }}})) ;
 	}
-	if (n == 0) {
-		return _SLIT("0");
-	}
-	i64 n_copy = n;
-	string sign = _SLIT("");
-	if (n < 0) {
-		sign = _SLIT("-");
-		n_copy = -n_copy;
-	}
-	string res = _SLIT("");
-	for (;;) {
-		if (!(n_copy != 0)) break;
-		res = string_add(byte_ascii_str(string_at(_const_strconv__base_digits, n_copy % radix)), res);
-		n_copy /= radix;
-	}
-	return _STR("%.*s\000%.*s", 2, sign, res);
+	return (string){.str=(byteptr)"", .is_lit=1};
 }
 
+// Attr: [manualfree]
 string strconv__format_uint(u64 n, int radix) {
-	if (radix < 2 || radix > 36) {
-		v_panic(_STR("invalid radix: %"PRId32"\000 . It should be => 2 and <= 36", 2, radix));
+	{ // Unsafe block
+		if (radix < 2 || radix > 36) {
+			v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("invalid radix: "), 0xfe07, {.d_i32 = radix}}, {_SLIT(" . It should be => 2 and <= 36"), 0, { .d_c = 0 }}})) );
+		}
+		if (n == 0U) {
+			return _SLIT("0");
+		}
+		u64 n_copy = n;
+		string res = _SLIT("");
+		u64 uradix = ((u64)(radix));
+		for (;;) {
+			if (!(n_copy != 0U)) break;
+			string tmp_0 = res;
+			string tmp_1 = byte_ascii_str(string_at(_const_strconv__base_digits, n_copy % uradix));
+			res = string__plus(tmp_1, res);
+			string_free(&tmp_0);
+			string_free(&tmp_1);
+			n_copy /= uradix;
+		}
+		return res;
 	}
-	if (n == 0U) {
-		return _SLIT("0");
-	}
-	u64 n_copy = n;
-	string res = _SLIT("");
-	u64 uradix = ((u64)(radix));
-	for (;;) {
-		if (!(n_copy != 0U)) break;
-		res = string_add(byte_ascii_str(string_at(_const_strconv__base_digits, n_copy % uradix)), res);
-		n_copy /= uradix;
-	}
-	return res;
+	return (string){.str=(byteptr)"", .is_lit=1};
 }
 
 VV_LOCAL_SYMBOL void strconv__assert1(bool t, string msg) {
@@ -3482,7 +3912,8 @@ VV_LOCAL_SYMBOL string strconv__get_string_special(bool neg, bool expZero, bool 
 	return _SLIT("0e+00");
 }
 
-VV_LOCAL_SYMBOL int strconv__decimal_len_32(u32 u) {
+// Attr: [deprecated]
+int strconv__decimal_len_32(u32 u) {
 	strconv__assert1(u < 1000000000U, _SLIT("too big"));
 	if (u >= 100000000U) {
 		return 9;
@@ -3505,9 +3936,9 @@ VV_LOCAL_SYMBOL int strconv__decimal_len_32(u32 u) {
 }
 
 VV_LOCAL_SYMBOL u32 strconv__mul_shift_32(u32 m, u64 mul, int ishift) {
-	multi_return_u64_u64 mr_1855 = math__bits__mul_64(((u64)(m)), mul);
-	u64 hi = mr_1855.arg0;
-	u64 lo = mr_1855.arg1;
+	multi_return_u64_u64 mr_1939 = math__bits__mul_64(((u64)(m)), mul);
+	u64 hi = mr_1939.arg0;
+	u64 lo = mr_1939.arg1;
 	u64 shifted_sum = (lo >> ((u64)(ishift))) + (hi << ((u64)(64 - ishift)));
 	strconv__assert1(shifted_sum <= 2147483647U, _SLIT("shiftedSum <= math.max_u32"));
 	return ((u32)(shifted_sum));
@@ -3560,7 +3991,8 @@ VV_LOCAL_SYMBOL int strconv__pow5_bits(int e) {
 	return ((int)(((((u32)(e)) * 1217359U) >> 19U) + 1U));
 }
 
-VV_LOCAL_SYMBOL int strconv__decimal_len_64(u64 u) {
+// Attr: [deprecated]
+int strconv__decimal_len_64(u64 u) {
 	int log2 = 64 - math__bits__leading_zeros_64(u) - 1;
 	int t = (log2 + 1) * 1233 >> 12;
 	return t - strconv__bool_to_int(u < (*(u64*)/*ee elem_typ */array_get(_const_strconv__powers_of_10, t))) + 1;
@@ -3572,11 +4004,11 @@ VV_LOCAL_SYMBOL u64 strconv__shift_right_128(strconv__Uint128 v, int shift) {
 }
 
 VV_LOCAL_SYMBOL u64 strconv__mul_shift_64(u64 m, strconv__Uint128 mul, int shift) {
-	multi_return_u64_u64 mr_4388 = math__bits__mul_64(m, mul.hi);
-	u64 hihi = mr_4388.arg0;
-	u64 hilo = mr_4388.arg1;
-	multi_return_u64_u64 mr_4426 = math__bits__mul_64(m, mul.lo);
-	u64 lohi = mr_4426.arg0;
+	multi_return_u64_u64 mr_4556 = math__bits__mul_64(m, mul.hi);
+	u64 hihi = mr_4556.arg0;
+	u64 hilo = mr_4556.arg1;
+	multi_return_u64_u64 mr_4594 = math__bits__mul_64(m, mul.lo);
+	u64 lohi = mr_4594.arg0;
 	strconv__Uint128 sum = (strconv__Uint128){.lo = lohi + hilo,.hi = hihi,};
 	if (sum.lo < lohi) {
 		sum.hi++;
@@ -3605,13 +4037,41 @@ VV_LOCAL_SYMBOL bool strconv__multiple_of_power_of_two_64(u64 v, u32 p) {
 	return ((u32)(math__bits__trailing_zeros_64(v))) >= p;
 }
 
-string strconv__f32_to_str_l(f64 f) {
-	return strconv__f64_to_str_l(((f32)(f)));
+// Attr: [manualfree]
+string strconv__f32_to_str_l(f32 f) {
+	string s = strconv__f32_to_str(f, 6);
+	string res = strconv__fxx_to_str_l_parse(s);
+	string_free(&s);
+	return res;
 }
 
+// Attr: [manualfree]
+string strconv__f32_to_str_l_no_dot(f32 f) {
+	string s = strconv__f32_to_str(f, 6);
+	string res = strconv__fxx_to_str_l_parse_no_dot(s);
+	string_free(&s);
+	return res;
+}
+
+// Attr: [manualfree]
 string strconv__f64_to_str_l(f64 f) {
 	string s = strconv__f64_to_str(f, 18);
-	if (s.len > 2 && (string_at(s, 0) == L'n' || string_at(s, 1) == L'i')) {
+	string res = strconv__fxx_to_str_l_parse(s);
+	string_free(&s);
+	return res;
+}
+
+// Attr: [manualfree]
+string strconv__f64_to_str_l_no_dot(f64 f) {
+	string s = strconv__f64_to_str(f, 18);
+	string res = strconv__fxx_to_str_l_parse_no_dot(s);
+	string_free(&s);
+	return res;
+}
+
+// Attr: [manualfree]
+string strconv__fxx_to_str_l_parse(string s) {
+	if (s.len > 2 && (string_at(s, 0) == 'n' || string_at(s, 1) == 'i')) {
 		return s;
 	}
 	bool m_sgn_flag = false;
@@ -3622,26 +4082,26 @@ string strconv__f64_to_str_l(f64 f) {
 	int i1 = 0;
 	int exp = 0;
 	int exp_sgn = 1;
-	for (int _t179 = 0; _t179 < s.len; ++_t179) {
-		byte c = s.str[_t179];
-		if (c == L'-') {
+	for (int _t192 = 0; _t192 < s.len; ++_t192) {
+		byte c = s.str[_t192];
+		if (c == '-') {
 			sgn = -1;
 			i++;
-		} else if (c == L'+') {
+		} else if (c == '+') {
 			sgn = 1;
 			i++;
-		} else if (c >= L'0' && c <= L'9') {
+		} else if (c >= '0' && c <= '9') {
 			b[v_fixed_index(i1, 26)] = c;
 			i1++;
 			i++;
-		} else if (c == L'.') {
+		} else if (c == '.') {
 			if (sgn > 0) {
 				d_pos = i;
 			} else {
 				d_pos = i - 1;
 			}
 			i++;
-		} else if (c == L'e') {
+		} else if (c == 'e') {
 			i++;
 			break;
 		} else {
@@ -3649,26 +4109,28 @@ string strconv__f64_to_str_l(f64 f) {
 		}
 	}
 	b[v_fixed_index(i1, 26)] = 0;
-	if (string_at(s, i) == L'-') {
+	if (string_at(s, i) == '-') {
 		exp_sgn = -1;
 		i++;
-	} else if (string_at(s, i) == L'+') {
+	} else if (string_at(s, i) == '+') {
 		exp_sgn = 1;
 		i++;
 	}
-	for (int _t181 = 0; _t181 < string_substr(s, i, s.len).len; ++_t181) {
-		byte c = string_substr(s, i, s.len).str[_t181];
-		exp = exp * 10 + ((int)(c - L'0'));
+	int c = i;
+	for (;;) {
+		if (!(c < s.len)) break;
+		exp = exp * 10 + ((int)(string_at(s, c) - '0'));
+		c++;
 	}
 	Array_byte res = __new_array_with_default(exp + 32, 0, sizeof(byte), &(byte[]){0});
 	int r_i = 0;
 	if (sgn == 1) {
 		if (m_sgn_flag) {
-			array_set(&res, r_i, &(byte[]) { L'+' });
+			array_set(&res, r_i, &(byte[]) { '+' });
 			r_i++;
 		}
 	} else {
-		array_set(&res, r_i, &(byte[]) { L'-' });
+		array_set(&res, r_i, &(byte[]) { '-' });
 		r_i++;
 	}
 	i = 0;
@@ -3680,7 +4142,7 @@ string strconv__f64_to_str_l(f64 f) {
 			i++;
 			if (i >= d_pos && exp >= 0) {
 				if (exp == 0) {
-					array_set(&res, r_i, &(byte[]) { L'.' });
+					array_set(&res, r_i, &(byte[]) { '.' });
 					r_i++;
 				}
 				exp--;
@@ -3688,7 +4150,7 @@ string strconv__f64_to_str_l(f64 f) {
 		}
 		for (;;) {
 			if (!(exp >= 0)) break;
-			array_set(&res, r_i, &(byte[]) { L'0' });
+			array_set(&res, r_i, &(byte[]) { '0' });
 			r_i++;
 			exp--;
 		}
@@ -3696,11 +4158,11 @@ string strconv__f64_to_str_l(f64 f) {
 		bool dot_p = true;
 		for (;;) {
 			if (!(exp > 0)) break;
-			array_set(&res, r_i, &(byte[]) { L'0' });
+			array_set(&res, r_i, &(byte[]) { '0' });
 			r_i++;
 			exp--;
 			if (dot_p) {
-				array_set(&res, r_i, &(byte[]) { L'.' });
+				array_set(&res, r_i, &(byte[]) { '.' });
 				r_i++;
 				dot_p = false;
 			}
@@ -3711,6 +4173,118 @@ string strconv__f64_to_str_l(f64 f) {
 			r_i++;
 			i++;
 		}
+	}
+	array_set(&res, r_i, &(byte[]) { 0 });
+	return tos(res.data, r_i);
+}
+
+// Attr: [manualfree]
+string strconv__fxx_to_str_l_parse_no_dot(string s) {
+	if (s.len > 2 && (string_at(s, 0) == 'n' || string_at(s, 1) == 'i')) {
+		return s;
+	}
+	bool m_sgn_flag = false;
+	int sgn = 1;
+	Array_fixed_byte_26 b = {0};
+	int d_pos = 1;
+	int i = 0;
+	int i1 = 0;
+	int exp = 0;
+	int exp_sgn = 1;
+	for (int _t196 = 0; _t196 < s.len; ++_t196) {
+		byte c = s.str[_t196];
+		if (c == '-') {
+			sgn = -1;
+			i++;
+		} else if (c == '+') {
+			sgn = 1;
+			i++;
+		} else if (c >= '0' && c <= '9') {
+			b[v_fixed_index(i1, 26)] = c;
+			i1++;
+			i++;
+		} else if (c == '.') {
+			if (sgn > 0) {
+				d_pos = i;
+			} else {
+				d_pos = i - 1;
+			}
+			i++;
+		} else if (c == 'e') {
+			i++;
+			break;
+		} else {
+			return _SLIT("Float conversion error!!");
+		}
+	}
+	b[v_fixed_index(i1, 26)] = 0;
+	if (string_at(s, i) == '-') {
+		exp_sgn = -1;
+		i++;
+	} else if (string_at(s, i) == '+') {
+		exp_sgn = 1;
+		i++;
+	}
+	int c = i;
+	for (;;) {
+		if (!(c < s.len)) break;
+		exp = exp * 10 + ((int)(string_at(s, c) - '0'));
+		c++;
+	}
+	Array_byte res = __new_array_with_default(exp + 32, 0, sizeof(byte), &(byte[]){0});
+	int r_i = 0;
+	if (sgn == 1) {
+		if (m_sgn_flag) {
+			array_set(&res, r_i, &(byte[]) { '+' });
+			r_i++;
+		}
+	} else {
+		array_set(&res, r_i, &(byte[]) { '-' });
+		r_i++;
+	}
+	i = 0;
+	if (exp_sgn >= 0) {
+		for (;;) {
+			if (!(b[v_fixed_index(i, 26)] != 0)) break;
+			array_set(&res, r_i, &(byte[]) { b[v_fixed_index(i, 26)] });
+			r_i++;
+			i++;
+			if (i >= d_pos && exp >= 0) {
+				if (exp == 0) {
+					array_set(&res, r_i, &(byte[]) { '.' });
+					r_i++;
+				}
+				exp--;
+			}
+		}
+		for (;;) {
+			if (!(exp >= 0)) break;
+			array_set(&res, r_i, &(byte[]) { '0' });
+			r_i++;
+			exp--;
+		}
+	} else {
+		bool dot_p = true;
+		for (;;) {
+			if (!(exp > 0)) break;
+			array_set(&res, r_i, &(byte[]) { '0' });
+			r_i++;
+			exp--;
+			if (dot_p) {
+				array_set(&res, r_i, &(byte[]) { '.' });
+				r_i++;
+				dot_p = false;
+			}
+		}
+		for (;;) {
+			if (!(b[v_fixed_index(i, 26)] != 0)) break;
+			array_set(&res, r_i, &(byte[]) { b[v_fixed_index(i, 26)] });
+			r_i++;
+			i++;
+		}
+	}
+	if (r_i > 1 && (*(byte*)/*ee elem_typ */array_get(res, r_i - 1)) == '.') {
+		r_i--;
 	}
 	array_set(&res, r_i, &(byte[]) { 0 });
 	return tos(res.data, r_i);
@@ -3808,9 +4382,9 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 	int len0 = -1;
 	int len1 = -1;
 	int def_len1 = 6;
-	byte pad_ch = ((byte)(L' '));
-	rune ch1 = L'0';
-	rune ch2 = L'0';
+	byte pad_ch = ((byte)(' '));
+	rune ch1 = '0';
+	rune ch2 = '0';
 	strconv__Char_parse_state status = strconv__Char_parse_state_norm_char;
 	for (;;) {
 		if (!(i < str.len)) break;
@@ -3819,24 +4393,24 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 			allign = strconv__Align_text_right;
 			len0 = -1;
 			len1 = -1;
-			pad_ch = L' ';
+			pad_ch = ' ';
 			status = strconv__Char_parse_state_norm_char;
-			ch1 = L'0';
-			ch2 = L'0';
+			ch1 = '0';
+			ch2 = '0';
 			continue;
 		}
 		byte ch = string_at(str, i);
-		if (ch != L'%' && status == strconv__Char_parse_state_norm_char) {
+		if (ch != '%' && status == strconv__Char_parse_state_norm_char) {
 			strings__Builder_write_b(&res, ch);
 			i++;
 			continue;
 		}
-		if (ch == L'%' && status == strconv__Char_parse_state_norm_char) {
+		if (ch == '%' && status == strconv__Char_parse_state_norm_char) {
 			status = strconv__Char_parse_state_field_char;
 			i++;
 			continue;
 		}
-		if (ch == L'c' && status == strconv__Char_parse_state_field_char) {
+		if (ch == 'c' && status == strconv__Char_parse_state_field_char) {
 			strconv__v_sprintf_panic(p_index, pt.len);
 			byte d1 = *(((byte*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 			strings__Builder_write_b(&res, d1);
@@ -3845,7 +4419,7 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 			i++;
 			continue;
 		}
-		if (ch == L'p' && status == strconv__Char_parse_state_field_char) {
+		if (ch == 'p' && status == strconv__Char_parse_state_field_char) {
 			strconv__v_sprintf_panic(p_index, pt.len);
 			strings__Builder_write_string(&res, _SLIT("0x"));
 			strings__Builder_write_string(&res, ptr_str((*(voidptr*)/*ee elem_typ */array_get(pt, p_index))));
@@ -3855,36 +4429,36 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 			continue;
 		}
 		if (status == strconv__Char_parse_state_field_char) {
-			rune fc_ch1 = L'0';
-			rune fc_ch2 = L'0';
+			rune fc_ch1 = '0';
+			rune fc_ch2 = '0';
 			if ((i + 1) < str.len) {
 				fc_ch1 = string_at(str, i + 1);
 				if ((i + 2) < str.len) {
 					fc_ch2 = string_at(str, i + 2);
 				}
 			}
-			if (ch == L'+') {
+			if (ch == '+') {
 				sign = true;
 				i++;
 				continue;
-			} else if (ch == L'-') {
+			} else if (ch == '-') {
 				allign = strconv__Align_text_left;
 				i++;
 				continue;
-			} else if ((ch == L'0' || ch == L' ')) {
+			} else if ((ch == '0' || ch == ' ')) {
 				if (allign == strconv__Align_text_right) {
 					pad_ch = ch;
 				}
 				i++;
 				continue;
-			} else if (ch == L'\'') {
+			} else if (ch == '\'') {
 				i++;
 				continue;
-			} else if (ch == L'.' && fc_ch1 >= L'1' && fc_ch1 <= L'9') {
+			} else if (ch == '.' && fc_ch1 >= '1' && fc_ch1 <= '9') {
 				status = strconv__Char_parse_state_check_float;
 				i++;
 				continue;
-			} else if (ch == L'.' && fc_ch1 == L'*' && fc_ch2 == L's') {
+			} else if (ch == '.' && fc_ch1 == '*' && fc_ch2 == 's') {
 				strconv__v_sprintf_panic(p_index, pt.len);
 				int len = *(((int*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 				p_index++;
@@ -3901,13 +4475,13 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 			continue;
 		}
 		if (status == strconv__Char_parse_state_len_set_start) {
-			if (ch >= L'1' && ch <= L'9') {
-				len0 = ((int)(ch - L'0'));
+			if (ch >= '1' && ch <= '9') {
+				len0 = ((int)(ch - '0'));
 				status = strconv__Char_parse_state_len_set_in;
 				i++;
 				continue;
 			}
-			if (ch == L'.') {
+			if (ch == '.') {
 				status = strconv__Char_parse_state_check_float;
 				i++;
 				continue;
@@ -3916,13 +4490,13 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 			continue;
 		}
 		if (status == strconv__Char_parse_state_len_set_in) {
-			if (ch >= L'0' && ch <= L'9') {
+			if (ch >= '0' && ch <= '9') {
 				len0 *= 10;
-				len0 += ((int)(ch - L'0'));
+				len0 += ((int)(ch - '0'));
 				i++;
 				continue;
 			}
-			if (ch == L'.') {
+			if (ch == '.') {
 				status = strconv__Char_parse_state_check_float;
 				i++;
 				continue;
@@ -3931,8 +4505,8 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 			continue;
 		}
 		if (status == strconv__Char_parse_state_check_float) {
-			if (ch >= L'0' && ch <= L'9') {
-				len1 = ((int)(ch - L'0'));
+			if (ch >= '0' && ch <= '9') {
+				len1 = ((int)(ch - '0'));
 				status = strconv__Char_parse_state_check_float_in;
 				i++;
 				continue;
@@ -3941,9 +4515,9 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 			continue;
 		}
 		if (status == strconv__Char_parse_state_check_float_in) {
-			if (ch >= L'0' && ch <= L'9') {
+			if (ch >= '0' && ch <= '9') {
 				len1 *= 10;
-				len1 += ((int)(ch - L'0'));
+				len1 += ((int)(ch - '0'));
 				i++;
 				continue;
 			}
@@ -3951,32 +4525,32 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 			continue;
 		}
 		if (status == strconv__Char_parse_state_check_type) {
-			if (ch == L'l') {
-				if (ch1 == L'0') {
-					ch1 = L'l';
+			if (ch == 'l') {
+				if (ch1 == '0') {
+					ch1 = 'l';
 					i++;
 					continue;
 				} else {
-					ch2 = L'l';
+					ch2 = 'l';
 					i++;
 					continue;
 				}
-			} else if (ch == L'h') {
-				if (ch1 == L'0') {
-					ch1 = L'h';
+			} else if (ch == 'h') {
+				if (ch1 == '0') {
+					ch1 = 'h';
 					i++;
 					continue;
 				} else {
-					ch2 = L'h';
+					ch2 = 'h';
 					i++;
 					continue;
 				}
-			} else if ((ch == L'd' || ch == L'i')) {
+			} else if ((ch == 'd' || ch == 'i')) {
 				u64 d1 = ((u64)(0U));
 				bool positive = true;
 
-				if (ch1 == (L'h')) {
-					if (ch2 == L'h') {
+				if (ch1 == ('h')) {
+					if (ch2 == 'h') {
 						strconv__v_sprintf_panic(p_index, pt.len);
 						i8 x = *(((i8*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 						positive = (x >= 0 ? (true) : (false));
@@ -3987,7 +4561,7 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 						d1 = (positive ? (((u64)(x))) : (((u64)(-x))));
 					}
 				}
-				else if (ch1 == (L'l')) {
+				else if (ch1 == ('l')) {
 					strconv__v_sprintf_panic(p_index, pt.len);
 					i64 x = *(((i64*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 					positive = (x >= 0 ? (true) : (false));
@@ -4011,22 +4585,22 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 				status = strconv__Char_parse_state_reset_params;
 				p_index++;
 				i++;
-				ch1 = L'0';
-				ch2 = L'0';
+				ch1 = '0';
+				ch2 = '0';
 				continue;
-			} else if (ch == L'u') {
+			} else if (ch == 'u') {
 				u64 d1 = ((u64)(0U));
 				bool positive = true;
 				strconv__v_sprintf_panic(p_index, pt.len);
 
-				if (ch1 == (L'h')) {
-					if (ch2 == L'h') {
+				if (ch1 == ('h')) {
+					if (ch2 == 'h') {
 						d1 = ((u64)(*(((byte*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))))));
 					} else {
 						d1 = ((u64)(*(((u16*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))))));
 					}
 				}
-				else if (ch1 == (L'l')) {
+				else if (ch1 == ('l')) {
 					d1 = ((u64)(*(((u64*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))))));
 				}
 				else {
@@ -4045,12 +4619,12 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 				p_index++;
 				i++;
 				continue;
-			} else if ((ch == L'x' || ch == L'X')) {
+			} else if ((ch == 'x' || ch == 'X')) {
 				strconv__v_sprintf_panic(p_index, pt.len);
 				string s = _SLIT("");
 
-				if (ch1 == (L'h')) {
-					if (ch2 == L'h') {
+				if (ch1 == ('h')) {
+					if (ch2 == 'h') {
 						i8 x = *(((i8*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 						s = i8_hex(x);
 					} else {
@@ -4058,7 +4632,7 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 						s = i16_hex(x);
 					}
 				}
-				else if (ch1 == (L'l')) {
+				else if (ch1 == ('l')) {
 					i64 x = *(((i64*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 					s = i64_hex(x);
 				}
@@ -4066,7 +4640,7 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 					int x = *(((int*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 					s = int_hex(x);
 				};
-				if (ch == L'X') {
+				if (ch == 'X') {
 					s = string_to_upper(s);
 				}
 				strings__Builder_write_string(&res, strconv__format_str(s, (strconv__BF_param){
@@ -4083,7 +4657,7 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 				i++;
 				continue;
 			}
-			if ((ch == L'f' || ch == L'F')) {
+			if ((ch == 'f' || ch == 'F')) {
 				strconv__v_sprintf_panic(p_index, pt.len);
 				f64 x = *(((f64*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 				bool positive = x >= ((f64)(0.0));
@@ -4097,12 +4671,12 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 					.allign = allign,
 					.rm_tail_zero = 0,
 				});
-				strings__Builder_write_string(&res, (ch == L'F' ? (string_to_upper(s)) : (s)));
+				strings__Builder_write_string(&res, (ch == 'F' ? (string_to_upper(s)) : (s)));
 				status = strconv__Char_parse_state_reset_params;
 				p_index++;
 				i++;
 				continue;
-			} else if ((ch == L'e' || ch == L'E')) {
+			} else if ((ch == 'e' || ch == 'E')) {
 				strconv__v_sprintf_panic(p_index, pt.len);
 				f64 x = *(((f64*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 				bool positive = x >= ((f64)(0.0));
@@ -4116,12 +4690,12 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 					.allign = allign,
 					.rm_tail_zero = 0,
 				});
-				strings__Builder_write_string(&res, (ch == L'E' ? (string_to_upper(s)) : (s)));
+				strings__Builder_write_string(&res, (ch == 'E' ? (string_to_upper(s)) : (s)));
 				status = strconv__Char_parse_state_reset_params;
 				p_index++;
 				i++;
 				continue;
-			} else if ((ch == L'g' || ch == L'G')) {
+			} else if ((ch == 'g' || ch == 'G')) {
 				strconv__v_sprintf_panic(p_index, pt.len);
 				f64 x = *(((f64*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
 				bool positive = x >= ((f64)(0.0));
@@ -4150,15 +4724,15 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 						.rm_tail_zero = true,
 					});
 				}
-				strings__Builder_write_string(&res, (ch == L'G' ? (string_to_upper(s)) : (s)));
+				strings__Builder_write_string(&res, (ch == 'G' ? (string_to_upper(s)) : (s)));
 				status = strconv__Char_parse_state_reset_params;
 				p_index++;
 				i++;
 				continue;
-			} else if (ch == L's') {
+			} else if (ch == 's') {
 				strconv__v_sprintf_panic(p_index, pt.len);
 				string s1 = *(((string*)((*(voidptr*)/*ee elem_typ */array_get(pt, p_index)))));
-				pad_ch = L' ';
+				pad_ch = ' ';
 				strings__Builder_write_string(&res, strconv__format_str(s1, (strconv__BF_param){
 					.pad_ch = pad_ch,
 					.len0 = len0,
@@ -4179,7 +4753,7 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 		i++;
 	}
 	if (p_index != pt.len) {
-		v_panic(_STR("%"PRId32"\000 %% conversion specifiers, but given %"PRId32"\000 args", 3, p_index, pt.len));
+		v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT0, 0xfe07, {.d_i32 = p_index}}, {_SLIT(" % conversion specifiers, but given "), 0xfe07, {.d_i32 = pt.len}}, {_SLIT(" args"), 0, { .d_c = 0 }}})) );
 	}
 	return strings__Builder_str(&res);
 }
@@ -4187,7 +4761,7 @@ string strconv__v_sprintf(string str, Array_voidptr pt) {
 // Attr: [inline]
 inline VV_LOCAL_SYMBOL void strconv__v_sprintf_panic(int idx, int len) {
 	if (idx >= len) {
-		v_panic(_STR("%"PRId32"\000 %% conversion specifiers, but given only %"PRId32"\000 args", 3, idx + 1, len));
+		v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT0, 0xfe07, {.d_i32 = idx + 1}}, {_SLIT(" % conversion specifiers, but given only "), 0xfe07, {.d_i32 = len}}, {_SLIT(" args"), 0, { .d_c = 0 }}})) );
 	}
 }
 
@@ -4199,157 +4773,11 @@ VV_LOCAL_SYMBOL f64 strconv__fabs(f64 x) {
 }
 
 // Attr: [manualfree]
-string strconv__f64_to_str_lnd1(f64 f, int dec_digit) {
-	{ // Unsafe block
-		string s = strconv__f64_to_str(f + (*(f64*)/*ee elem_typ */array_get(_const_strconv__dec_round, dec_digit)), 18);
-		if (s.len > 2 && (string_at(s, 0) == L'n' || string_at(s, 1) == L'i')) {
-			return s;
-		}
-		bool m_sgn_flag = false;
-		int sgn = 1;
-		Array_fixed_byte_26 b = {0};
-		int d_pos = 1;
-		int i = 0;
-		int i1 = 0;
-		int exp = 0;
-		int exp_sgn = 1;
-		int dot_res_sp = -1;
-		for (int _t207 = 0; _t207 < s.len; ++_t207) {
-			byte c = s.str[_t207];
-			if (c == L'-') {
-				sgn = -1;
-				i++;
-			} else if (c == L'+') {
-				sgn = 1;
-				i++;
-			} else if (c >= L'0' && c <= L'9') {
-				b[v_fixed_index(i1, 26)] = c;
-				i1++;
-				i++;
-			} else if (c == L'.') {
-				if (sgn > 0) {
-					d_pos = i;
-				} else {
-					d_pos = i - 1;
-				}
-				i++;
-			} else if (c == L'e') {
-				i++;
-				break;
-			} else {
-				string_free(&s);
-				return _SLIT("[Float conversion error!!]");
-			}
-		}
-		b[v_fixed_index(i1, 26)] = 0;
-		if (string_at(s, i) == L'-') {
-			exp_sgn = -1;
-			i++;
-		} else if (string_at(s, i) == L'+') {
-			exp_sgn = 1;
-			i++;
-		}
-		int c = i;
-		for (;;) {
-			if (!(c < s.len)) break;
-			exp = exp * 10 + ((int)(string_at(s, c) - L'0'));
-			c++;
-		}
-		Array_byte res = __new_array_with_default(exp + 32, 0, sizeof(byte), &(byte[]){0});
-		int r_i = 0;
-		string_free(&s);
-		if (sgn == 1) {
-			if (m_sgn_flag) {
-				array_set(&res, r_i, &(byte[]) { L'+' });
-				r_i++;
-			}
-		} else {
-			array_set(&res, r_i, &(byte[]) { L'-' });
-			r_i++;
-		}
-		i = 0;
-		if (exp_sgn >= 0) {
-			for (;;) {
-				if (!(b[v_fixed_index(i, 26)] != 0)) break;
-				array_set(&res, r_i, &(byte[]) { b[v_fixed_index(i, 26)] });
-				r_i++;
-				i++;
-				if (i >= d_pos && exp >= 0) {
-					if (exp == 0) {
-						dot_res_sp = r_i;
-						array_set(&res, r_i, &(byte[]) { L'.' });
-						r_i++;
-					}
-					exp--;
-				}
-			}
-			for (;;) {
-				if (!(exp >= 0)) break;
-				array_set(&res, r_i, &(byte[]) { L'0' });
-				r_i++;
-				exp--;
-			}
-		} else {
-			bool dot_p = true;
-			for (;;) {
-				if (!(exp > 0)) break;
-				array_set(&res, r_i, &(byte[]) { L'0' });
-				r_i++;
-				exp--;
-				if (dot_p) {
-					dot_res_sp = r_i;
-					array_set(&res, r_i, &(byte[]) { L'.' });
-					r_i++;
-					dot_p = false;
-				}
-			}
-			for (;;) {
-				if (!(b[v_fixed_index(i, 26)] != 0)) break;
-				array_set(&res, r_i, &(byte[]) { b[v_fixed_index(i, 26)] });
-				r_i++;
-				i++;
-			}
-		}
-		if (dec_digit <= 0) {
-			string tmp_res = string_clone(tos(res.data, dot_res_sp));
-			array_free(&res);
-			return tmp_res;
-		}
-		if (dot_res_sp >= 0) {
-			if ((r_i - dot_res_sp) > dec_digit) {
-				r_i = dot_res_sp + dec_digit + 1;
-			}
-			array_set(&res, r_i, &(byte[]) { 0 });
-			string tmp_res = string_clone(tos(res.data, r_i));
-			array_free(&res);
-			return tmp_res;
-		} else {
-			if (dec_digit > 0) {
-				int c1 = 0;
-				array_set(&res, r_i, &(byte[]) { L'.' });
-				r_i++;
-				for (;;) {
-					if (!(c1 < dec_digit)) break;
-					array_set(&res, r_i, &(byte[]) { L'0' });
-					r_i++;
-					c1++;
-				}
-				array_set(&res, r_i, &(byte[]) { 0 });
-			}
-			string tmp_res = string_clone(tos(res.data, r_i));
-			array_free(&res);
-			return tmp_res;
-		}
-	}
-	return (string){.str=(byteptr)"", .is_lit=1};
-}
-
-// Attr: [manualfree]
 string strconv__format_fl_old(f64 f, strconv__BF_param p) {
 	{ // Unsafe block
 		string s = _SLIT("");
 		string fs = strconv__f64_to_str_lnd1((f >= 0.0 ? (f) : (-f)), p.len1);
-		if (string_at(fs, 0) == L'[') {
+		if (string_at(fs, 0) == '[') {
 			string_free(&s);
 			return fs;
 		}
@@ -4360,14 +4788,14 @@ string strconv__format_fl_old(f64 f, strconv__BF_param p) {
 		}
 		strings__Builder res = strings__new_builder((p.len0 > fs.len ? (p.len0) : (fs.len)));
 		int sign_len_diff = 0;
-		if (p.pad_ch == L'0') {
+		if (p.pad_ch == '0') {
 			if (p.positive) {
 				if (p.sign_flag) {
-					strings__Builder_write_b(&res, L'+');
+					strings__Builder_write_b(&res, '+');
 					sign_len_diff = -1;
 				}
 			} else {
-				strings__Builder_write_b(&res, L'-');
+				strings__Builder_write_b(&res, '-');
 				sign_len_diff = -1;
 			}
 			string tmp = s;
@@ -4377,7 +4805,7 @@ string strconv__format_fl_old(f64 f, strconv__BF_param p) {
 			if (p.positive) {
 				if (p.sign_flag) {
 					string tmp = s;
-					s = string_add(_SLIT("+"), fs);
+					s = string__plus(_SLIT("+"), fs);
 					string_free(&tmp);
 				} else {
 					string tmp = s;
@@ -4386,7 +4814,7 @@ string strconv__format_fl_old(f64 f, strconv__BF_param p) {
 				}
 			} else {
 				string tmp = s;
-				s = string_add(_SLIT("-"), fs);
+				s = string__plus(_SLIT("-"), fs);
 				string_free(&tmp);
 			}
 		}
@@ -4421,14 +4849,14 @@ string strconv__format_es_old(f64 f, strconv__BF_param p) {
 		}
 		strings__Builder res = strings__new_builder((p.len0 > fs.len ? (p.len0) : (fs.len)));
 		int sign_len_diff = 0;
-		if (p.pad_ch == L'0') {
+		if (p.pad_ch == '0') {
 			if (p.positive) {
 				if (p.sign_flag) {
-					strings__Builder_write_b(&res, L'+');
+					strings__Builder_write_b(&res, '+');
 					sign_len_diff = -1;
 				}
 			} else {
-				strings__Builder_write_b(&res, L'-');
+				strings__Builder_write_b(&res, '-');
 				sign_len_diff = -1;
 			}
 			string tmp = s;
@@ -4438,7 +4866,7 @@ string strconv__format_es_old(f64 f, strconv__BF_param p) {
 			if (p.positive) {
 				if (p.sign_flag) {
 					string tmp = s;
-					s = string_add(_SLIT("+"), fs);
+					s = string__plus(_SLIT("+"), fs);
 					string_free(&tmp);
 				} else {
 					string tmp = s;
@@ -4447,7 +4875,7 @@ string strconv__format_es_old(f64 f, strconv__BF_param p) {
 				}
 			} else {
 				string tmp = s;
-				s = string_add(_SLIT("-"), fs);
+				s = string__plus(_SLIT("-"), fs);
 				string_free(&tmp);
 			}
 		}
@@ -4481,15 +4909,15 @@ string strconv__remove_tail_zeros_old(string s) {
 	for (;;) {
 		if (!(i < s.len)) break;
 		byte ch = s.str[i];
-		if (ch == L'.') {
+		if (ch == '.') {
 			in_decimal = true;
 			dot_pos = i;
 		} else if (in_decimal) {
-			if (ch == L'0' && prev_ch != L'0') {
+			if (ch == '0' && prev_ch != '0') {
 				last_zero_start = i;
-			} else if (ch >= L'1' && ch <= L'9') {
+			} else if (ch >= '1' && ch <= '9') {
 				last_zero_start = -1;
-			} else if (ch == L'e') {
+			} else if (ch == 'e') {
 				break;
 			}
 		}
@@ -4499,14 +4927,14 @@ string strconv__remove_tail_zeros_old(string s) {
 	string tmp = _SLIT("");
 	if (last_zero_start > 0) {
 		if (last_zero_start == dot_pos + 1) {
-			tmp = string_add(string_substr(s, 0, dot_pos), string_substr(s, i, s.len));
+			tmp = string__plus(string_substr(s, 0, dot_pos), string_substr(s, i, s.len));
 		} else {
-			tmp = string_add(string_substr(s, 0, last_zero_start), string_substr(s, i, s.len));
+			tmp = string__plus(string_substr(s, 0, last_zero_start), string_substr(s, i, s.len));
 		}
 	} else {
 		tmp = s;
 	}
-	if (tmp.str[tmp.len - 1] == L'.') {
+	if (tmp.str[tmp.len - 1] == '.') {
 		return string_substr(tmp, 0, tmp.len - 1);
 	}
 	return tmp;
@@ -4516,26 +4944,26 @@ string strconv__format_dec_old(u64 d, strconv__BF_param p) {
 	string s = _SLIT("");
 	strings__Builder res = strings__new_builder(20);
 	int sign_len_diff = 0;
-	if (p.pad_ch == L'0') {
+	if (p.pad_ch == '0') {
 		if (p.positive) {
 			if (p.sign_flag) {
-				strings__Builder_write_b(&res, L'+');
+				strings__Builder_write_b(&res, '+');
 				sign_len_diff = -1;
 			}
 		} else {
-			strings__Builder_write_b(&res, L'-');
+			strings__Builder_write_b(&res, '-');
 			sign_len_diff = -1;
 		}
 		s = u64_str(d);
 	} else {
 		if (p.positive) {
 			if (p.sign_flag) {
-				s = string_add(_SLIT("+"), u64_str(d));
+				s = string__plus(_SLIT("+"), u64_str(d));
 			} else {
 				s = u64_str(d);
 			}
 		} else {
-			s = string_add(_SLIT("-"), u64_str(d));
+			s = string__plus(_SLIT("-"), u64_str(d));
 		}
 	}
 	int dif = p.len0 - s.len + sign_len_diff;
@@ -4614,7 +5042,7 @@ VV_LOCAL_SYMBOL void array_ensure_cap(array* a, int required) {
 
 array array_repeat(array a, int count) {
 	if (count < 0) {
-		v_panic(_STR("array.repeat: count is negative: %"PRId32"", 1, count));
+		v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("array.repeat: count is negative: "), 0xfe07, {.d_i32 = count}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 	}
 	int size = count * a.len * a.element_size;
 	if (size == 0) {
@@ -4650,7 +5078,7 @@ void array_insert(array* a, int i, voidptr val) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (i < 0 || i > a->len) {
-			v_panic(_STR("array.insert: index out of range (i == %"PRId32"\000, a.len == %"PRId32"\000)", 3, i, a->len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.insert: index out of range (i == "), 0xfe07, {.d_i32 = i}}, {_SLIT(", a.len == "), 0xfe07, {.d_i32 = a->len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -4667,7 +5095,7 @@ void array_insert_many(array* a, int i, voidptr val, int size) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (i < 0 || i > a->len) {
-			v_panic(_STR("array.insert_many: index out of range (i == %"PRId32"\000, a.len == %"PRId32"\000)", 3, i, a->len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.insert_many: index out of range (i == "), 0xfe07, {.d_i32 = i}}, {_SLIT(", a.len == "), 0xfe07, {.d_i32 = a->len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -4694,7 +5122,7 @@ void array_delete(array* a, int i) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (i < 0 || i >= a->len) {
-			v_panic(_STR("array.delete: index out of range (i == %"PRId32"\000, a.len == %"PRId32"\000)", 3, i, a->len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.delete: index out of range (i == "), 0xfe07, {.d_i32 = i}}, {_SLIT(", a.len == "), 0xfe07, {.d_i32 = a->len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -4725,7 +5153,7 @@ VV_LOCAL_SYMBOL voidptr array_get(array a, int i) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (i < 0 || i >= a.len) {
-			v_panic(_STR("array.get: index out of range (i == %"PRId32"\000, a.len == %"PRId32"\000)", 3, i, a.len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.get: index out of range (i == "), 0xfe07, {.d_i32 = i}}, {_SLIT(", a.len == "), 0xfe07, {.d_i32 = a.len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -4800,13 +5228,13 @@ VV_LOCAL_SYMBOL array array_slice(array a, int start, int _end) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (start > end) {
-			v_panic(_STR("array.slice: invalid slice index (%"PRId32"\000 > %"PRId32"\000)", 3, start, end));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.slice: invalid slice index ("), 0xfe07, {.d_i32 = start}}, {_SLIT(" > "), 0xfe07, {.d_i32 = end}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 		if (end > a.len) {
-			v_panic(_STR("array.slice: slice bounds out of range (%"PRId32"\000 >= %"PRId32"\000)", 3, end, a.len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.slice: slice bounds out of range ("), 0xfe07, {.d_i32 = end}}, {_SLIT(" >= "), 0xfe07, {.d_i32 = a.len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 		if (start < 0) {
-			v_panic(_STR("array.slice: slice bounds out of range (%"PRId32"\000 < 0)", 2, start));
+			v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("array.slice: slice bounds out of range ("), 0xfe07, {.d_i32 = start}}, {_SLIT(" < 0)"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -4862,13 +5290,13 @@ VV_LOCAL_SYMBOL array array_slice_clone(array* a, int start, int _end) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (start > end) {
-			v_panic(_STR("array.slice: invalid slice index (%"PRId32"\000 > %"PRId32"\000)", 3, start, end));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.slice: invalid slice index ("), 0xfe07, {.d_i32 = start}}, {_SLIT(" > "), 0xfe07, {.d_i32 = end}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 		if (end > a->len) {
-			v_panic(_STR("array.slice: slice bounds out of range (%"PRId32"\000 >= %"PRId32"\000)", 3, end, a->len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.slice: slice bounds out of range ("), 0xfe07, {.d_i32 = end}}, {_SLIT(" >= "), 0xfe07, {.d_i32 = a->len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 		if (start < 0) {
-			v_panic(_STR("array.slice: slice bounds out of range (%"PRId32"\000 < 0)", 2, start));
+			v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("array.slice: slice bounds out of range ("), 0xfe07, {.d_i32 = start}}, {_SLIT(" < 0)"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -4891,7 +5319,7 @@ VV_LOCAL_SYMBOL void array_set(array* a, int i, voidptr val) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (i < 0 || i >= a->len) {
-			v_panic(_STR("array.set: index out of range (i == %"PRId32"\000, a.len == %"PRId32"\000)", 3, i, a->len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.set: index out of range (i == "), 0xfe07, {.d_i32 = i}}, {_SLIT(", a.len == "), 0xfe07, {.d_i32 = a->len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -4953,8 +5381,8 @@ void array_free(array* a) {
 // Attr: [unsafe]
 void Array_string_free(Array_string* a) {
 	// FOR IN array
-	for (int _t239 = 0; _t239 < a->len; ++_t239) {
-		string s = ((string*)a->data)[_t239];
+	for (int _t249 = 0; _t249 < a->len; ++_t249) {
+		string s = ((string*)a->data)[_t249];
 		string_free(&s);
 	}
 	v_free(a->data);
@@ -4983,16 +5411,16 @@ string Array_byte_hex(Array_byte b) {
 	byte* hex = v_malloc(b.len * 2 + 1);
 	int dst_i = 0;
 	// FOR IN array
-	for (int _t241 = 0; _t241 < b.len; ++_t241) {
-		byte i = ((byte*)b.data)[_t241];
+	for (int _t251 = 0; _t251 < b.len; ++_t251) {
+		byte i = ((byte*)b.data)[_t251];
 		byte n0 = i >> 4;
 		{ // Unsafe block
-			hex[dst_i] = (n0 < 10 ? (n0 + L'0') : (n0 + ((byte)(87))));
+			hex[dst_i] = (n0 < 10 ? (n0 + '0') : (n0 + ((byte)(87))));
 			dst_i++;
 		}
 		byte n1 = (i & 0xF);
 		{ // Unsafe block
-			hex[dst_i] = (n1 < 10 ? (n1 + L'0') : (n1 + ((byte)(87))));
+			hex[dst_i] = (n1 < 10 ? (n1 + '0') : (n1 + ((byte)(87))));
 			dst_i++;
 		}
 	}
@@ -5037,7 +5465,7 @@ void Array_int_sort(Array_int* a) {
 
 int Array_string_index(Array_string a, string v) {
 	for (int i = 0; i < a.len; ++i) {
-		if (string_eq((*(string*)/*ee elem_typ */array_get(a, i)), v)) {
+		if (string__eq((*(string*)/*ee elem_typ */array_get(a, i)), v)) {
 			return i;
 		}
 	}
@@ -5047,8 +5475,8 @@ int Array_string_index(Array_string a, string v) {
 int Array_int_reduce(Array_int a, int (*iter)(int , int ), int accum_start) {
 	int accum_ = accum_start;
 	// FOR IN array
-	for (int _t252 = 0; _t252 < a.len; ++_t252) {
-		int i = ((int*)a.data)[_t252];
+	for (int _t262 = 0; _t262 < a.len; ++_t262) {
+		int i = ((int*)a.data)[_t262];
 		accum_ = iter(accum_, i);
 	}
 	return accum_;
@@ -5073,7 +5501,7 @@ bool Array_string_eq(Array_string a1, Array_string a2) {
 		int offset = i * size_of_string;
 		string* s1 = ((string*)(((byte*)(a1.data)) + offset));
 		string* s2 = ((string*)(((byte*)(a2.data)) + offset));
-		if (string_ne(*s1, *s2)) {
+		if (!string__eq(*s1, *s2)) {
 			return false;
 		}
 	}
@@ -5136,7 +5564,7 @@ VV_LOCAL_SYMBOL array new_array_from_c_array_noscan(int len, int cap, int elm_si
 
 VV_LOCAL_SYMBOL array array_repeat_noscan(array a, int count) {
 	if (count < 0) {
-		v_panic(_STR("array.repeat: count is negative: %"PRId32"", 1, count));
+		v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("array.repeat: count is negative: "), 0xfe07, {.d_i32 = count}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 	}
 	int size = count * a.len * a.element_size;
 	if (size == 0) {
@@ -5191,13 +5619,13 @@ VV_LOCAL_SYMBOL array array_slice_clone_noscan(array* a, int start, int _end) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (start > end) {
-			v_panic(_STR("array.slice: invalid slice index (%"PRId32"\000 > %"PRId32"\000)", 3, start, end));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.slice: invalid slice index ("), 0xfe07, {.d_i32 = start}}, {_SLIT(" > "), 0xfe07, {.d_i32 = end}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 		if (end > a->len) {
-			v_panic(_STR("array.slice: slice bounds out of range (%"PRId32"\000 >= %"PRId32"\000)", 3, end, a->len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("array.slice: slice bounds out of range ("), 0xfe07, {.d_i32 = end}}, {_SLIT(" >= "), 0xfe07, {.d_i32 = a->len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 		if (start < 0) {
-			v_panic(_STR("array.slice: slice bounds out of range (%"PRId32"\000 < 0)", 2, start));
+			v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("array.slice: slice bounds out of range ("), 0xfe07, {.d_i32 = start}}, {_SLIT(" < 0)"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -5237,39 +5665,35 @@ VV_LOCAL_SYMBOL void panic_debug(int line_no, string file, string mod, string fn
 	#else
 	{
 		eprintln(_SLIT("================ V panic ================"));
-		eprintln(_STR("   module: %.*s", 1, mod));
-		eprintln(_STR(" function: %.*s\000()", 2, fn_name));
-		eprintln(_STR("  message: %.*s", 1, s));
-		eprintln(_STR("     file: %.*s\000:%"PRId32"", 2, file, line_no));
-		eprintln(_STR("   v hash: %.*s", 1, vcommithash()));
+		eprintln( str_intp(2, _MOV((StrIntpData[]){{_SLIT("   module: "), 0xfe10, {.d_s = mod}}, {_SLIT0, 0, { .d_c = 0 }}})) );
+		eprintln( str_intp(2, _MOV((StrIntpData[]){{_SLIT(" function: "), 0xfe10, {.d_s = fn_name}}, {_SLIT("()"), 0, { .d_c = 0 }}})) );
+		eprintln( str_intp(2, _MOV((StrIntpData[]){{_SLIT("  message: "), 0xfe10, {.d_s = s}}, {_SLIT0, 0, { .d_c = 0 }}})) );
+		eprintln( str_intp(3, _MOV((StrIntpData[]){{_SLIT("     file: "), 0xfe10, {.d_s = file}}, {_SLIT(":"), 0xfe07, {.d_i32 = line_no}}, {_SLIT0, 0, { .d_c = 0 }}})) );
+		eprintln( str_intp(2, _MOV((StrIntpData[]){{_SLIT("   v hash: "), 0xfe10, {.d_s = vcommithash()}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 		eprintln(_SLIT("========================================="));
 		#if defined(CUSTOM_DEFINE_exit_after_panic_message)
 		{
 		}
+		#elif defined(CUSTOM_DEFINE_no_backtrace)
+		{
+		}
 		#else
 		{
-			#if defined(CUSTOM_DEFINE_no_backtrace)
+			#if defined(__TINYC__)
 			{
-			}
-			#else
-			{
-				#if defined(__TINYC__)
+				#if defined(CUSTOM_DEFINE_panics_break_into_debugger)
 				{
-					#if defined(CUSTOM_DEFINE_panics_break_into_debugger)
-					{
-					}
-					#else
-					{
-						tcc_backtrace("Backtrace");
-					}
-					#endif
-					exit(1);
+				}
+				#else
+				{
+					tcc_backtrace("Backtrace");
 				}
 				#endif
-				print_backtrace_skipping_top_frames(1);
 				exit(1);
 			}
 			#endif
+			print_backtrace_skipping_top_frames(1);
+			exit(1);
 		}
 		#endif
 	}
@@ -5277,7 +5701,7 @@ VV_LOCAL_SYMBOL void panic_debug(int line_no, string file, string mod, string fn
 }
 
 void panic_optional_not_set(string s) {
-	v_panic(_STR("optional not set (%.*s\000)", 2, s));
+	v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("optional not set ("), 0xfe10, {.d_s = s}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 }
 
 void v_panic(string s) {
@@ -5288,34 +5712,30 @@ void v_panic(string s) {
 	{
 		eprint(_SLIT("V panic: "));
 		eprintln(s);
-		eprintln(_STR("v hash: %.*s", 1, vcommithash()));
+		eprintln( str_intp(2, _MOV((StrIntpData[]){{_SLIT("v hash: "), 0xfe10, {.d_s = vcommithash()}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 		#if defined(CUSTOM_DEFINE_exit_after_panic_message)
+		{
+		}
+		#elif defined(CUSTOM_DEFINE_no_backtrace)
 		{
 		}
 		#else
 		{
-			#if defined(CUSTOM_DEFINE_no_backtrace)
+			#if defined(__TINYC__)
 			{
-			}
-			#else
-			{
-				#if defined(__TINYC__)
+				#if defined(CUSTOM_DEFINE_panics_break_into_debugger)
 				{
-					#if defined(CUSTOM_DEFINE_panics_break_into_debugger)
-					{
-					}
-					#else
-					{
-						tcc_backtrace("Backtrace");
-					}
-					#endif
-					exit(1);
+				}
+				#else
+				{
+					tcc_backtrace("Backtrace");
 				}
 				#endif
-				print_backtrace_skipping_top_frames(1);
 				exit(1);
 			}
 			#endif
+			print_backtrace_skipping_top_frames(1);
+			exit(1);
 		}
 		#endif
 	}
@@ -5366,7 +5786,10 @@ void eprint(string s) {
 }
 
 void print(string s) {
-	#if defined(__TARGET_IOS__)
+	#if defined(__ANDROID__)
+	{
+	}
+	#elif defined(__TARGET_IOS__)
 	{
 	}
 	#elif defined(_VFREESTANDING)
@@ -5397,7 +5820,10 @@ void println(string s) {
 		#endif
 		return;
 	}
-	#if defined(__TARGET_IOS__)
+	#if defined(__ANDROID__)
+	{
+	}
+	#elif defined(__TARGET_IOS__)
 	{
 	}
 	#elif defined(_VFREESTANDING)
@@ -5420,24 +5846,20 @@ byte* v_malloc(int n) {
 	#if defined(_VPREALLOC)
 	{
 	}
+	#elif defined(_VGCBOEHM)
+	{
+	}
+	#elif defined(_VFREESTANDING)
+	{
+	}
 	#else
 	{
-		#if defined(_VGCBOEHM)
-		{
-		}
-		#elif defined(_VFREESTANDING)
-		{
-		}
-		#else
-		{
-			res = malloc(n);
-		}
-		#endif
-		if (res == 0) {
-			v_panic(_STR("malloc(%"PRId32"\000) failed", 2, n));
-		}
+		res = malloc(n);
 	}
 	#endif
+	if (res == 0) {
+		v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("malloc("), 0xfe07, {.d_i32 = n}}, {_SLIT(") failed"), 0, { .d_c = 0 }}})) );
+	}
 	return res;
 }
 
@@ -5447,21 +5869,17 @@ byte* v_realloc(byte* b, int n) {
 	#if defined(_VPREALLOC)
 	{
 	}
+	#elif defined(_VGCBOEHM)
+	{
+	}
 	#else
 	{
-		#if defined(_VGCBOEHM)
-		{
-		}
-		#else
-		{
-			new_ptr = realloc(b, n);
-		}
-		#endif
-		if (new_ptr == 0) {
-			v_panic(_STR("realloc(%"PRId32"\000) failed", 2, n));
-		}
+		new_ptr = realloc(b, n);
 	}
 	#endif
+	if (new_ptr == 0) {
+		v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("realloc("), 0xfe07, {.d_i32 = n}}, {_SLIT(") failed"), 0, { .d_c = 0 }}})) );
+	}
 	return new_ptr;
 }
 
@@ -5477,7 +5895,7 @@ byte* realloc_data(byte* old_data, int old_size, int new_size) {
 	}
 	#endif
 	if (nptr == 0) {
-		v_panic(_STR("realloc_data(%"PRId32"\000, %"PRId32"\000, %"PRId32"\000) failed", 4, old_data, old_size, new_size));
+		v_panic( str_intp(4, _MOV((StrIntpData[]){{_SLIT("realloc_data("), 0xfe11, {.d_p = (void*)(old_data)}}, {_SLIT(", "), 0xfe07, {.d_i32 = old_size}}, {_SLIT(", "), 0xfe07, {.d_i32 = new_size}}, {_SLIT(") failed"), 0, { .d_c = 0 }}})) );
 	}
 	return nptr;
 }
@@ -5488,7 +5906,10 @@ byte* vcalloc(int n) {
 	} else if (n == 0) {
 		return ((byte*)(0));
 	}
-	#if defined(_VGCBOEHM)
+	#if defined(_VPREALLOC)
+	{
+	}
+	#elif defined(_VGCBOEHM)
 	{
 	}
 	#else
@@ -5500,7 +5921,10 @@ byte* vcalloc(int n) {
 }
 
 byte* vcalloc_noscan(int n) {
-	#if defined(_VGCBOEHM)
+	#if defined(_VPREALLOC)
+	{
+	}
+	#elif defined(_VGCBOEHM)
 	{
 	}
 	#else
@@ -5513,7 +5937,17 @@ byte* vcalloc_noscan(int n) {
 
 // Attr: [unsafe]
 void v_free(voidptr ptr) {
-	free(ptr);
+	#if defined(_VPREALLOC)
+	{
+	}
+	#elif defined(_VGCBOEHM)
+	{
+	}
+	#else
+	{
+		free(ptr);
+	}
+	#endif
 }
 
 // Attr: [unsafe]
@@ -5533,7 +5967,7 @@ inline VV_LOCAL_SYMBOL int v_fixed_index(int i, int len) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (i < 0 || i >= len) {
-			string s = _STR("fixed array index out of range (index: %"PRId32"\000, len: %"PRId32"\000)", 3, i, len);
+			string s =  str_intp(3, _MOV((StrIntpData[]){{_SLIT("fixed array index out of range (index: "), 0xfe07, {.d_i32 = i}}, {_SLIT(", len: "), 0xfe07, {.d_i32 = len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) ;
 			v_panic(s);
 		}
 	}
@@ -5553,12 +5987,23 @@ int is_atty(int fd) {
 }
 
 void print_backtrace(void) {
-	#if defined(_VFREESTANDING)
+	#if !defined(CUSTOM_DEFINE_no_backtrace)
 	{
-	}
-	#else
-	{
-		print_backtrace_skipping_top_frames(2);
+		#if defined(_VFREESTANDING)
+		{
+		}
+		#else
+		{
+			#if defined(__TINYC__)
+			{
+				tcc_backtrace("Backtrace");
+			}
+			#else
+			{
+			}
+			#endif
+		}
+		#endif
 	}
 	#endif
 }
@@ -5568,8 +6013,8 @@ VV_LOCAL_SYMBOL voidptr __as_cast(voidptr obj, int obj_type, int expected_type) 
 		string obj_name = string_clone((*(VCastTypeIndexName*)/*ee elem_typ */array_get(as_cast_type_indexes, 0)).tname);
 		string expected_name = string_clone((*(VCastTypeIndexName*)/*ee elem_typ */array_get(as_cast_type_indexes, 0)).tname);
 		// FOR IN array
-		for (int _t283 = 0; _t283 < as_cast_type_indexes.len; ++_t283) {
-			VCastTypeIndexName x = ((VCastTypeIndexName*)as_cast_type_indexes.data)[_t283];
+		for (int _t293 = 0; _t293 < as_cast_type_indexes.len; ++_t293) {
+			VCastTypeIndexName x = ((VCastTypeIndexName*)as_cast_type_indexes.data)[_t293];
 			if (x.tindex == obj_type) {
 				obj_name = string_clone(x.tname);
 			}
@@ -5577,19 +6022,19 @@ VV_LOCAL_SYMBOL voidptr __as_cast(voidptr obj, int obj_type, int expected_type) 
 				expected_name = string_clone(x.tname);
 			}
 		}
-		v_panic(_STR("as cast: cannot cast `%.*s\000` to `%.*s\000`", 3, obj_name, expected_name));
+		v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("as cast: cannot cast `"), 0xfe10, {.d_s = obj_name}}, {_SLIT("` to `"), 0xfe10, {.d_s = expected_name}}, {_SLIT("`"), 0, { .d_c = 0 }}})) );
 	}
 	return obj;
 }
 
 VV_LOCAL_SYMBOL void __print_assert_failure(VAssertMetaInfo* i) {
-	eprintln(_STR("%.*s\000:%"PRId32"\000: FAIL: fn %.*s\000: assert %.*s", 4, i->fpath, i->line_nr + 1, i->fn_name, i->src));
-	if (i->op.len > 0 && string_ne(i->op, _SLIT("call"))) {
-		eprintln(_STR("   left value: %.*s\000 = %.*s", 2, i->llabel, i->lvalue));
-		if (string_eq(i->rlabel, i->rvalue)) {
-			eprintln(_STR("  right value: %.*s", 1, i->rlabel));
+	eprintln( str_intp(5, _MOV((StrIntpData[]){{_SLIT0, 0xfe10, {.d_s = i->fpath}}, {_SLIT(":"), 0xfe07, {.d_i32 = i->line_nr + 1}}, {_SLIT(": FAIL: fn "), 0xfe10, {.d_s = i->fn_name}}, {_SLIT(": assert "), 0xfe10, {.d_s = i->src}}, {_SLIT0, 0, { .d_c = 0 }}})) );
+	if (i->op.len > 0 && !string__eq(i->op, _SLIT("call"))) {
+		eprintln( str_intp(3, _MOV((StrIntpData[]){{_SLIT("   left value: "), 0xfe10, {.d_s = i->llabel}}, {_SLIT(" = "), 0xfe10, {.d_s = i->lvalue}}, {_SLIT0, 0, { .d_c = 0 }}})) );
+		if (string__eq(i->rlabel, i->rvalue)) {
+			eprintln( str_intp(2, _MOV((StrIntpData[]){{_SLIT("  right value: "), 0xfe10, {.d_s = i->rlabel}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 		} else {
-			eprintln(_STR("  right value: %.*s\000 = %.*s", 2, i->rlabel, i->rvalue));
+			eprintln( str_intp(3, _MOV((StrIntpData[]){{_SLIT("  right value: "), 0xfe10, {.d_s = i->rlabel}}, {_SLIT(" = "), 0xfe10, {.d_s = i->rvalue}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 		}
 	}
 }
@@ -5600,7 +6045,7 @@ VV_LOCAL_SYMBOL void builtin_init(void) {
 VV_LOCAL_SYMBOL bool print_backtrace_skipping_top_frames(int xskipframes) {
 	int skipframes = xskipframes + 2;
 	return print_backtrace_skipping_top_frames_linux(skipframes);
-	println(_STR("print_backtrace_skipping_top_frames is not implemented. skipframes: %"PRId32"", 1, skipframes));
+	println( str_intp(2, _MOV((StrIntpData[]){{_SLIT("print_backtrace_skipping_top_frames is not implemented. skipframes: "), 0xfe07, {.d_i32 = skipframes}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 	return false;
 }
 
@@ -5639,12 +6084,12 @@ VV_LOCAL_SYMBOL bool print_backtrace_skipping_top_frames_linux(int skipframes) {
 				array_push((array*)&sframes, _MOV((string[]){ tos2(((byte*)(csymbols[i]))) }));
 			}
 			// FOR IN array
-			for (int _t292 = 0; _t292 < sframes.len; ++_t292) {
-				string sframe = ((string*)sframes.data)[_t292];
+			for (int _t302 = 0; _t302 < sframes.len; ++_t302) {
+				string sframe = ((string*)sframes.data)[_t302];
 				string executable = string_all_before(sframe, _SLIT("("));
 				string addr = string_all_before(string_all_after(sframe, _SLIT("[")), _SLIT("]"));
 				string beforeaddr = string_all_before(sframe, _SLIT("["));
-				string cmd = _STR("addr2line -e %.*s\000 %.*s", 2, executable, addr);
+				string cmd =  str_intp(3, _MOV((StrIntpData[]){{_SLIT("addr2line -e "), 0xfe10, {.d_s = executable}}, {_SLIT(" "), 0xfe10, {.d_s = addr}}, {_SLIT0, 0, { .d_c = 0 }}})) ;
 				voidptr f = popen(((char*)(cmd.str)), "r");
 				if (isnil(f)) {
 					eprintln(sframe);
@@ -5656,19 +6101,19 @@ VV_LOCAL_SYMBOL bool print_backtrace_skipping_top_frames_linux(int skipframes) {
 					byte* bp = &buf[0];
 					for (;;) {
 						if (!(fgets(((char*)(bp)), 1000, f) != 0)) break;
-						output = /*f*/string_add(output, tos(bp, vstrlen(bp)));
+						output = /*f*/string__plus(output, tos(bp, vstrlen(bp)));
 					}
 				}
-				output = string_add(string_trim_space(output), _SLIT(":"));
+				output = string__plus(string_trim_space(output), _SLIT(":"));
 				if (pclose(f) != 0) {
 					eprintln(sframe);
 					continue;
 				}
-				if ((string_eq(output, _SLIT("??:0:")) || string_eq(output, _SLIT("??:?:")))) {
+				if ((string__eq(output, _SLIT("??:0:")) || string__eq(output, _SLIT("??:?:")))) {
 					output = _SLIT("");
 				}
 				output = string_replace(output, _SLIT(" (discriminator"), _SLIT(": (d."));
-				eprintln(_STR("%*.*s\000 | %*.*s\000 | %.*s", 3, output, -55, addr, 14, beforeaddr));
+				eprintln( str_intp(4, _MOV((StrIntpData[]){{_SLIT0, 0x6efe10, {.d_s = output}}, {_SLIT(" | "), 0x1cfe30, {.d_s = addr}}, {_SLIT(" | "), 0xfe10, {.d_s = beforeaddr}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 			}
 		}
 		#endif
@@ -5731,9 +6176,32 @@ ChanState chan_try_push(chan ch, voidptr obj) {
 
 // Attr: [inline]
 inline string f64_str(f64 x) {
+	{ // Unsafe block
+		strconv__Float64u f = (strconv__Float64u){.f = x,};
+		if (f.u == _const_strconv__double_minus_zero) {
+			return _SLIT("-0");
+		}
+		if (f.u == _const_strconv__double_plus_zero) {
+			return _SLIT("0");
+		}
+	}
 	f64 abs_x = f64_abs(x);
 	if (abs_x >= 0.0001 && abs_x < 1.0e6) {
 		return strconv__f64_to_str_l(x);
+	} else {
+		return strconv__ftoa_64(x);
+	}
+	return (string){.str=(byteptr)"", .is_lit=1};
+}
+
+// Attr: [inline]
+inline string f64_strg(f64 x) {
+	if (x == 0) {
+		return _SLIT("0");
+	}
+	f64 abs_x = f64_abs(x);
+	if (abs_x >= 0.0001 && abs_x < 1.0e6) {
+		return strconv__f64_to_str_l_no_dot(x);
 	} else {
 		return strconv__ftoa_64(x);
 	}
@@ -5763,9 +6231,32 @@ inline string f64_strlong(f64 x) {
 
 // Attr: [inline]
 inline string f32_str(f32 x) {
+	{ // Unsafe block
+		strconv__Float32u f = (strconv__Float32u){.f = x,};
+		if (f.u == _const_strconv__single_minus_zero) {
+			return _SLIT("-0");
+		}
+		if (f.u == _const_strconv__single_plus_zero) {
+			return _SLIT("0");
+		}
+	}
 	f32 abs_x = f32_abs(x);
 	if (abs_x >= 0.0001 && abs_x < 1.0e6) {
 		return strconv__f32_to_str_l(x);
+	} else {
+		return strconv__ftoa_32(x);
+	}
+	return (string){.str=(byteptr)"", .is_lit=1};
+}
+
+// Attr: [inline]
+inline string f32_strg(f32 x) {
+	if (x == 0) {
+		return _SLIT("0");
+	}
+	f32 abs_x = f32_abs(x);
+	if (abs_x >= 0.0001 && abs_x < 1.0e6) {
+		return strconv__f32_to_str_l_no_dot(x);
 	} else {
 		return strconv__ftoa_32(x);
 	}
@@ -5890,7 +6381,7 @@ inline VV_LOCAL_SYMBOL string int_str_l(int nn, int max) {
 		}
 		if (is_neg) {
 			index--;
-			buf[index] = L'-';
+			buf[index] = '-';
 		}
 		int diff = max - index;
 		memmove(buf, buf + index, diff + 1);
@@ -5992,7 +6483,7 @@ inline string i64_str(i64 nn) {
 		}
 		if (is_neg) {
 			index--;
-			buf[index] = L'-';
+			buf[index] = '-';
 		}
 		int diff = max - index;
 		memmove(buf, buf + index, diff + 1);
@@ -6053,7 +6544,7 @@ inline VV_LOCAL_SYMBOL string u64_to_hex(u64 nn, byte len) {
 	int i = 0;
 	for (i = len - 1; i >= 0; i--) {
 		byte d = ((byte)((n & 0xFU)));
-		rune x = (d < 10 ? (d + L'0') : (d + 87));
+		rune x = (d < 10 ? (d + '0') : (d + 87));
 		buf[i] = x;
 		n = n >> 4U;
 	}
@@ -6069,7 +6560,7 @@ inline VV_LOCAL_SYMBOL string u64_to_hex_no_leading_zeros(u64 nn, byte len) {
 	int i = 0;
 	for (i = len - 1; i >= 0; i--) {
 		byte d = ((byte)((n & 0xFU)));
-		rune x = (d < 10 ? (d + L'0') : (d + 87));
+		rune x = (d < 10 ? (d + '0') : (d + 87));
 		buf[i] = x;
 		n = n >> 4U;
 		if (n == 0U) {
@@ -6114,7 +6605,7 @@ string int_hex(int nn) {
 }
 
 string int_hex2(int n) {
-	return string_add(_SLIT("0x"), int_hex(n));
+	return string__plus(_SLIT("0x"), int_hex(n));
 }
 
 string u64_hex(u64 nn) {
@@ -6158,41 +6649,52 @@ string byte_ascii_str(byte b) {
 }
 
 string byte_str_escaped(byte b) {
-	string _t353;
+	string _t373;
 	
 	if (b == (0)) {
-		_t353 = _SLIT("`\\0`");
+		_t373 = _SLIT("`\\0`");
+		;
 	}
 	else if (b == (7)) {
-		_t353 = _SLIT("`\\a`");
+		_t373 = _SLIT("`\\a`");
+		;
 	}
 	else if (b == (8)) {
-		_t353 = _SLIT("`\\b`");
+		_t373 = _SLIT("`\\b`");
+		;
 	}
 	else if (b == (9)) {
-		_t353 = _SLIT("`\\t`");
+		_t373 = _SLIT("`\\t`");
+		;
 	}
 	else if (b == (10)) {
-		_t353 = _SLIT("`\\n`");
+		_t373 = _SLIT("`\\n`");
+		;
 	}
 	else if (b == (11)) {
-		_t353 = _SLIT("`\\v`");
+		_t373 = _SLIT("`\\v`");
+		;
 	}
 	else if (b == (12)) {
-		_t353 = _SLIT("`\\f`");
+		_t373 = _SLIT("`\\f`");
+		;
 	}
 	else if (b == (13)) {
-		_t353 = _SLIT("`\\r`");
+		_t373 = _SLIT("`\\r`");
+		;
 	}
 	else if (b == (27)) {
-		_t353 = _SLIT("`\\e`");
+		_t373 = _SLIT("`\\e`");
+		;
 	}
 	else if ((b >= 32 && b <= 126)) {
-		_t353 = byte_ascii_str(b);
+		_t373 = byte_ascii_str(b);
+		;
 	}
 	else {
-		_t353 = string_add(_SLIT("0x"), byte_hex(b));
-	}	string str = _t353;
+		_t373 = string__plus(_SLIT("0x"), byte_hex(b));
+		;
+	}	string str = _t373;
 	return str;
 }
 
@@ -6377,7 +6879,7 @@ VV_LOCAL_SYMBOL void map_free_string(voidptr pkey) {
 	string_free(&(*((string*)(pkey))));
 }
 
-VV_LOCAL_SYMBOL void map_free_nop(voidptr _t372) {
+VV_LOCAL_SYMBOL void map_free_nop(voidptr _t392) {
 }
 
 VV_LOCAL_SYMBOL map new_map(int key_bytes, int value_bytes, u64 (*hash_fn)(voidptr ), bool (*key_eq_fn)(voidptr , voidptr ), void (*clone_fn)(voidptr , voidptr ), void (*free_fn)(voidptr )) {
@@ -6405,7 +6907,7 @@ VV_LOCAL_SYMBOL map new_map_init(u64 (*hash_fn)(voidptr ), bool (*key_eq_fn)(voi
 	map out = new_map(key_bytes, value_bytes, (voidptr)hash_fn, (voidptr)key_eq_fn, (voidptr)clone_fn, (voidptr)free_fn);
 	byte* pkey = ((byte*)(keys));
 	byte* pval = ((byte*)(values));
-	for (int _t374 = 0; _t374 < n; ++_t374) {
+	for (int _t394 = 0; _t394 < n; ++_t394) {
 		{ // Unsafe block
 			map_set(&out, pkey, pval);
 			pkey = pkey + key_bytes;
@@ -6605,12 +7107,12 @@ VV_LOCAL_SYMBOL voidptr map_get_and_set(map* m, voidptr key, voidptr zero) {
 	}
 	// assert
 	if (!(false)) {
-		VAssertMetaInfo v_assert_meta_info__t380 = {0};
-		v_assert_meta_info__t380.fpath = _SLIT("/home/edwindj/Documents/v/v/vlib/builtin/map.v");
-		v_assert_meta_info__t380.line_nr = 560;
-		v_assert_meta_info__t380.fn_name = _SLIT("get_and_set");
-		v_assert_meta_info__t380.src = _SLIT("false");
-		__print_assert_failure(&v_assert_meta_info__t380);
+		VAssertMetaInfo v_assert_meta_info__t400 = {0};
+		v_assert_meta_info__t400.fpath = _SLIT("/home/edwindj/Documents/v/v/vlib/builtin/map.v");
+		v_assert_meta_info__t400.line_nr = 560;
+		v_assert_meta_info__t400.fn_name = _SLIT("get_and_set");
+		v_assert_meta_info__t400.src = _SLIT("false");
+		__print_assert_failure(&v_assert_meta_info__t400);
 		v_panic(_SLIT("Assertion failed..."));
 	}
 	return ((voidptr)(0));
@@ -6843,20 +7345,27 @@ void map_free(map* m) {
 }
 
 string IError_str(IError err) {
-	return ((err._typ == _IError_None___index) ? (_SLIT("none")) : (err._typ == _IError_Error_index) ? ((err._Error)->msg) : (_STR("%.*s\000: %.*s", 2, tos3( /* IError */ v_typeof_interface_IError( (err)._typ )), (*(err.msg)))));
+	return ((err._typ == _IError_None___index) ? (_SLIT("none")) : (err._typ == _IError_Error_index) ? ((err._Error)->msg) : ( str_intp(3, _MOV((StrIntpData[]){{_SLIT0, 0xfe10, {.d_s = tos3( /* IError */ v_typeof_interface_IError( (err)._typ ))}}, {_SLIT(": "), 0xfe10, {.d_s = (*(err.msg))}}, {_SLIT0, 0, { .d_c = 0 }}})) ));
 }
 
-VV_LOCAL_SYMBOL string None___str(None__ _t394) {
+VV_LOCAL_SYMBOL string None___str(None__ _t414) {
 	return _SLIT("none");
+}
+
+// Attr: [trace_error]
+VV_LOCAL_SYMBOL void trace_error(string x) {
+	eprintln( str_intp(3, _MOV((StrIntpData[]){{_SLIT("> "), 0xfe10, {.d_s = _SLIT("trace_error")}}, {_SLIT(" | "), 0xfe10, {.d_s = x}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 }
 
 // Attr: [inline]
 inline IError v_error(string message) {
+	;
 	return I_Error_to_Interface_IError((Error*)memdup(&(Error){.msg = message,.code = 0,}, sizeof(Error)));
 }
 
 // Attr: [inline]
 inline IError error_with_code(string message, int code) {
+	;
 	return I_Error_to_Interface_IError((Error*)memdup(&(Error){.msg = message,.code = code,}, sizeof(Error)));
 }
 
@@ -6886,12 +7395,86 @@ void IError_free(IError* ie) {
 	}
 }
 
+// Attr: [unsafe]
+VV_LOCAL_SYMBOL VMemoryBlock* vmemory_block_new(VMemoryBlock* prev, int at_least) {
+	VMemoryBlock* v = ((VMemoryBlock*)(calloc(1, /*SizeOf*/ sizeof(VMemoryBlock))));
+	if (prev != 0) {
+		v->id = prev->id + 1;
+	}
+	v->previous = prev;
+	int block_size = (at_least < _const_prealloc_block_size ? (_const_prealloc_block_size) : (at_least));
+	v->start = malloc(block_size);
+	v->cap = block_size;
+	v->remaining = block_size;
+	v->current = v->start;
+	return v;
+}
+
+// Attr: [unsafe]
+VV_LOCAL_SYMBOL byte* vmemory_block_malloc(int n) {
+	{ // Unsafe block
+		if (g_memory_block->remaining < n) {
+			g_memory_block = vmemory_block_new(g_memory_block, n);
+		}
+		byte* res = ((byte*)(0));
+		res = g_memory_block->current;
+		g_memory_block->remaining -= n;
+		g_memory_block->mallocs++;
+		g_memory_block->current += n;
+		return res;
+	}
+	return 0;
+}
+
+// Attr: [unsafe]
+VV_LOCAL_SYMBOL void prealloc_vinit(void) {
+	{ // Unsafe block
+		g_memory_block = vmemory_block_new(((voidptr)(0)), _const_prealloc_block_size);
+		#if !defined(_VFREESTANDING)
+		{
+			atexit((voidptr)prealloc_vcleanup);
+		}
+		#endif
+	}
+}
+
+// Attr: [unsafe]
+VV_LOCAL_SYMBOL void prealloc_vcleanup(void) {
+	{ // Unsafe block
+		for (;;) {
+			if (!(g_memory_block != 0)) break;
+			free(g_memory_block->start);
+			g_memory_block = g_memory_block->previous;
+		}
+	}
+}
+
+// Attr: [unsafe]
+VV_LOCAL_SYMBOL byte* prealloc_malloc(int n) {
+	return vmemory_block_malloc(n);
+}
+
+// Attr: [unsafe]
+VV_LOCAL_SYMBOL byte* prealloc_realloc(byte* old_data, int old_size, int new_size) {
+	byte* new_ptr = vmemory_block_malloc(new_size);
+	int min_size = (old_size < new_size ? (old_size) : (new_size));
+	memcpy(new_ptr, old_data, min_size);
+	return new_ptr;
+}
+
+// Attr: [unsafe]
+VV_LOCAL_SYMBOL byte* prealloc_calloc(int n) {
+	byte* new_ptr = vmemory_block_malloc(n);
+	memset(new_ptr, 0, n);
+	return new_ptr;
+}
+
 string rune_str(rune c) {
 	return utf32_to_str(((u32)(c)));
 }
 
 bool byte_is_capital(byte c) {
-	return c >= L'A' && c <= L'Z';
+	return c >= 'A' && c <= 'Z';
 }
 
 Array_byte Array_byte_clone(Array_byte b) {
@@ -6939,11 +7522,11 @@ VV_LOCAL_SYMBOL void SortedMap_set(SortedMap* m, string key, voidptr value) {
 				m->root = parent;
 			}
 			mapnode_split_child(parent, child_index, node);
-			if (string_eq(key, parent->keys[v_fixed_index(child_index, 11)])) {
+			if (string__eq(key, parent->keys[v_fixed_index(child_index, 11)])) {
 				memcpy(parent->values[v_fixed_index(child_index, 11)], value, m->value_bytes);
 				return;
 			}
-			if (string_lt(key, parent->keys[v_fixed_index(child_index, 11)])) {
+			if (string__lt(key, parent->keys[v_fixed_index(child_index, 11)])) {
 				node = ((mapnode*)(parent->children[child_index]));
 			} else {
 				node = ((mapnode*)(parent->children[child_index + 1]));
@@ -6951,17 +7534,17 @@ VV_LOCAL_SYMBOL void SortedMap_set(SortedMap* m, string key, voidptr value) {
 		}
 		int i = 0;
 		for (;;) {
-			if (!(i < node->len && string_gt(key, node->keys[v_fixed_index(i, 11)]))) break;
+			if (!(i < node->len && string__lt(node->keys[v_fixed_index(i, 11)], key))) break;
 			i++;
 		}
-		if (i != node->len && string_eq(key, node->keys[v_fixed_index(i, 11)])) {
+		if (i != node->len && string__eq(key, node->keys[v_fixed_index(i, 11)])) {
 			memcpy(node->values[v_fixed_index(i, 11)], value, m->value_bytes);
 			return;
 		}
 		if (isnil(node->children)) {
 			int j = node->len - 1;
 			for (;;) {
-				if (!(j >= 0 && string_lt(key, node->keys[v_fixed_index(j, 11)]))) break;
+				if (!(j >= 0 && string__lt(key, node->keys[v_fixed_index(j, 11)]))) break;
 				node->keys[v_fixed_index(j + 1, 11)] = node->keys[v_fixed_index(j, 11)];
 				node->values[v_fixed_index(j + 1, 11)] = node->values[v_fixed_index(j, 11)];
 				j--;
@@ -7024,10 +7607,10 @@ VV_LOCAL_SYMBOL bool SortedMap_get(SortedMap m, string key, voidptr out) {
 	for (;;) {
 		int i = node->len - 1;
 		for (;;) {
-			if (!(i >= 0 && string_lt(key, node->keys[v_fixed_index(i, 11)]))) break;
+			if (!(i >= 0 && string__lt(key, node->keys[v_fixed_index(i, 11)]))) break;
 			i--;
 		}
-		if (i != -1 && string_eq(key, node->keys[v_fixed_index(i, 11)])) {
+		if (i != -1 && string__eq(key, node->keys[v_fixed_index(i, 11)])) {
 			memcpy(out, node->values[v_fixed_index(i, 11)], m.value_bytes);
 			return true;
 		}
@@ -7047,10 +7630,10 @@ VV_LOCAL_SYMBOL bool SortedMap_exists(SortedMap m, string key) {
 	for (;;) {
 		int i = node->len - 1;
 		for (;;) {
-			if (!(i >= 0 && string_lt(key, node->keys[v_fixed_index(i, 11)]))) break;
+			if (!(i >= 0 && string__lt(key, node->keys[v_fixed_index(i, 11)]))) break;
 			i--;
 		}
-		if (i != -1 && string_eq(key, node->keys[v_fixed_index(i, 11)])) {
+		if (i != -1 && string__eq(key, node->keys[v_fixed_index(i, 11)])) {
 			return true;
 		}
 		if (isnil(node->children)) {
@@ -7064,7 +7647,7 @@ VV_LOCAL_SYMBOL bool SortedMap_exists(SortedMap m, string key) {
 VV_LOCAL_SYMBOL int mapnode_find_key(mapnode* n, string k) {
 	int idx = 0;
 	for (;;) {
-		if (!(idx < n->len && string_lt(n->keys[v_fixed_index(idx, 11)], k))) break;
+		if (!(idx < n->len && string__lt(n->keys[v_fixed_index(idx, 11)], k))) break;
 		idx++;
 	}
 	return idx;
@@ -7072,7 +7655,7 @@ VV_LOCAL_SYMBOL int mapnode_find_key(mapnode* n, string k) {
 
 VV_LOCAL_SYMBOL bool mapnode_remove_key(mapnode* n, string k) {
 	int idx = mapnode_find_key(n, k);
-	if (idx < n->len && string_eq(n->keys[v_fixed_index(idx, 11)], k)) {
+	if (idx < n->len && string__eq(n->keys[v_fixed_index(idx, 11)], k)) {
 		if (isnil(n->children)) {
 			mapnode_remove_from_leaf(n, idx);
 		} else {
@@ -7414,13 +7997,16 @@ string string_replace_once(string s, string rep, string with) {
 	if (idx == -1) {
 		return string_clone(s);
 	}
-	return string_add(string_add(string_substr(s, 0, idx), with), string_substr(s, idx + rep.len, s.len));
+	return string__plus(string__plus(string_substr(s, 0, idx), with), string_substr(s, idx + rep.len, s.len));
 }
 
 // Attr: [direct_array_access]
 string string_replace(string s, string rep, string with) {
 bool string_replace_defer_0 = false;
 	if (s.len == 0 || rep.len == 0 || rep.len > s.len) {
+		return string_clone(s);
+	}
+	if (!string_contains(s, rep)) {
 		return string_clone(s);
 	}
 	Array_int idxs = __new_array_with_default(0, s.len / rep.len, sizeof(int), 0);
@@ -7435,21 +8021,21 @@ bool string_replace_defer_0 = false;
 		idx += rep.len;
 	}
 	if (idxs.len == 0) {
-		string _t443 = string_clone(s);
+		string _t469 = string_clone(s);
 		// Defer begin
 		if (string_replace_defer_0) {
 			array_free(&idxs);
 		}
 		// Defer end
-		return _t443;
+		return _t469;
 	}
 	int new_len = s.len + idxs.len * (with.len - rep.len);
 	byte* b = v_malloc(new_len + 1);
 	int b_i = 0;
 	int s_idx = 0;
 	// FOR IN array
-	for (int _t444 = 0; _t444 < idxs.len; ++_t444) {
-		int rep_pos = ((int*)idxs.data)[_t444];
+	for (int _t470 = 0; _t470 < idxs.len; ++_t470) {
+		int rep_pos = ((int*)idxs.data)[_t470];
 		for (int i = s_idx; i < rep_pos; ++i) {
 			{ // Unsafe block
 				b[b_i] = s.str[ i];
@@ -7474,13 +8060,13 @@ bool string_replace_defer_0 = false;
 	}
 	{ // Unsafe block
 		b[new_len] = 0;
-		string _t445 = tos(b, new_len);
+		string _t471 = tos(b, new_len);
 		// Defer begin
 		if (string_replace_defer_0) {
 			array_free(&idxs);
 		}
 		// Defer end
-		return _t445;
+		return _t471;
 	}
 	return (string){.str=(byteptr)"", .is_lit=1};
 }
@@ -7568,7 +8154,7 @@ string string_replace_each(string s, Array_string vals) {
 }
 
 bool string_bool(string s) {
-	return string_eq(s, _SLIT("true")) || string_eq(s, _SLIT("t"));
+	return string__eq(s, _SLIT("true")) || string__eq(s, _SLIT("t"));
 }
 
 int string_int(string s) {
@@ -7607,12 +8193,19 @@ u64 string_u64(string s) {
 	return strconv__common_parse_uint(s, 0, 64, false, false);
 }
 
-VV_LOCAL_SYMBOL bool string_eq(string s, string a) {
+// Attr: [direct_array_access]
+VV_LOCAL_SYMBOL bool string__eq(string s, string a) {
 	if (s.str == 0) {
 		v_panic(_SLIT("string.eq(): nil string"));
 	}
 	if (s.len != a.len) {
 		return false;
+	}
+	if (s.len > 0) {
+		int last_idx = s.len - 1;
+		if (s.str[ last_idx] != a.str[ last_idx]) {
+			return false;
+		}
 	}
 	{ // Unsafe block
 		return memcmp(s.str, a.str, a.len) == 0;
@@ -7620,11 +8213,7 @@ VV_LOCAL_SYMBOL bool string_eq(string s, string a) {
 	return 0;
 }
 
-VV_LOCAL_SYMBOL bool string_ne(string s, string a) {
-	return !string_eq(s, a);
-}
-
-VV_LOCAL_SYMBOL bool string_lt(string s, string a) {
+VV_LOCAL_SYMBOL bool string__lt(string s, string a) {
 	for (int i = 0; i < s.len; ++i) {
 		if (i >= a.len || string_at(s, i) > string_at(a, i)) {
 			return false;
@@ -7638,19 +8227,7 @@ VV_LOCAL_SYMBOL bool string_lt(string s, string a) {
 	return false;
 }
 
-VV_LOCAL_SYMBOL bool string_le(string s, string a) {
-	return string_lt(s, a) || string_eq(s, a);
-}
-
-VV_LOCAL_SYMBOL bool string_gt(string s, string a) {
-	return !string_le(s, a);
-}
-
-VV_LOCAL_SYMBOL bool string_ge(string s, string a) {
-	return !string_lt(s, a);
-}
-
-string string_add(string s, string a) {
+VV_LOCAL_SYMBOL string string__plus(string s, string a) {
 	int new_len = a.len + s.len;
 	string res = (string){.str = v_malloc(new_len + 1), .len = new_len};
 	for (int j = 0; j < s.len; ++j) {
@@ -7680,8 +8257,8 @@ Array_string string_split_nth(string s, string delim, int nth) {
 
 	if (delim.len == (0)) {
 		i = 1;
-		for (int _t476 = 0; _t476 < s.len; ++_t476) {
-			byte ch = s.str[_t476];
+		for (int _t499 = 0; _t499 < s.len; ++_t499) {
+			byte ch = s.str[_t499];
 			if (nth > 0 && i >= nth) {
 				array_push((array*)&res, _MOV((string[]){ string_substr(s, i, s.len) }));
 				break;
@@ -7718,7 +8295,7 @@ Array_string string_split_nth(string s, string delim, int nth) {
 		int start = 0;
 		for (;;) {
 			if (!(i <= s.len)) break;
-			bool is_delim = i + delim.len <= s.len && string_eq(string_substr(s, i, i + delim.len), delim);
+			bool is_delim = i + delim.len <= s.len && string__eq(string_substr(s, i, i + delim.len), delim);
 			if (is_delim) {
 				bool was_last = nth > 0 && res.len == nth - 1;
 				if (was_last) {
@@ -7770,7 +8347,7 @@ string string_substr(string s, int start, int end) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (start > end || start > s.len || end > s.len || start < 0 || end < 0) {
-			v_panic(_STR("substr(%"PRId32"\000, %"PRId32"\000) out of bounds (len=%"PRId32"\000)", 4, start, end, s.len));
+			v_panic( str_intp(4, _MOV((StrIntpData[]){{_SLIT("substr("), 0xfe07, {.d_i32 = start}}, {_SLIT(", "), 0xfe07, {.d_i32 = end}}, {_SLIT(") out of bounds (len="), 0xfe07, {.d_i32 = s.len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -7818,9 +8395,9 @@ Option_int string_index(string s, string p) {
 	if (idx == -1) {
 		return (Option_int){ .state=2, .err=_const_none__, .data={0} };
 	}
-	Option_int _t498;
-	opt_ok(&(int[]) { idx }, (Option*)(&_t498), sizeof(int));
-	return _t498;
+	Option_int _t521;
+	opt_ok(&(int[]) { idx }, (Option*)(&_t521), sizeof(int));
+	return _t521;
 }
 
 // Attr: [direct_array_access]
@@ -7853,27 +8430,27 @@ bool string_index_kmp_defer_0 = false;
 			j++;
 		}
 		if (j == p.len) {
-			int _t500 = i - p.len + 1;
+			int _t523 = i - p.len + 1;
 			// Defer begin
 			if (string_index_kmp_defer_0) {
 				array_free(&prefix);
 			}
 			// Defer end
-			return _t500;
+			return _t523;
 		}
 	}
-	int _t501 = -1;
+	int _t524 = -1;
 	// Defer begin
 	if (string_index_kmp_defer_0) {
 		array_free(&prefix);
 	}
 	// Defer end
-	return _t501;
+	return _t524;
 }
 
 int string_index_any(string s, string chars) {
-	for (int _t502 = 0; _t502 < chars.len; ++_t502) {
-		byte c = chars.str[_t502];
+	for (int _t525 = 0; _t525 < chars.len; ++_t525) {
+		byte c = chars.str[_t525];
 		int idx = string_index_(s, byte_ascii_str(c));
 		if (idx == -1) {
 			continue;
@@ -7908,9 +8485,9 @@ Option_int string_last_index(string s, string p) {
 	if (idx == -1) {
 		return (Option_int){ .state=2, .err=_const_none__, .data={0} };
 	}
-	Option_int _t509;
-	opt_ok(&(int[]) { idx }, (Option*)(&_t509), sizeof(int));
-	return _t509;
+	Option_int _t532;
+	opt_ok(&(int[]) { idx }, (Option*)(&_t532), sizeof(int));
+	return _t532;
 }
 
 int string_index_after(string s, string p, int start) {
@@ -7970,8 +8547,8 @@ int string_count(string s, string substr) {
 	int n = 0;
 	if (substr.len == 1) {
 		byte target = string_at(substr, 0);
-		for (int _t520 = 0; _t520 < s.len; ++_t520) {
-			byte letter = s.str[_t520];
+		for (int _t543 = 0; _t543 < s.len; ++_t543) {
+			byte letter = s.str[_t543];
 			if (letter == target) {
 				n++;
 			}
@@ -8001,8 +8578,8 @@ bool string_contains(string s, string substr) {
 }
 
 bool string_contains_any(string s, string chars) {
-	for (int _t527 = 0; _t527 < chars.len; ++_t527) {
-		byte c = chars.str[_t527];
+	for (int _t550 = 0; _t550 < chars.len; ++_t550) {
+		byte c = chars.str[_t550];
 		if (string_contains(s, byte_ascii_str(c))) {
 			return true;
 		}
@@ -8015,8 +8592,8 @@ bool string_contains_any_substr(string s, Array_string substrs) {
 		return true;
 	}
 	// FOR IN array
-	for (int _t531 = 0; _t531 < substrs.len; ++_t531) {
-		string sub = ((string*)substrs.data)[_t531];
+	for (int _t554 = 0; _t554 < substrs.len; ++_t554) {
+		string sub = ((string*)substrs.data)[_t554];
 		if (string_contains(s, sub)) {
 			return true;
 		}
@@ -8052,7 +8629,7 @@ string string_to_lower(string s) {
 	{ // Unsafe block
 		byte* b = v_malloc(s.len + 1);
 		for (int i = 0; i < s.len; ++i) {
-			if (s.str[i] >= L'A' && s.str[i] <= L'Z') {
+			if (s.str[i] >= 'A' && s.str[i] <= 'Z') {
 				b[i] = s.str[i] + 32;
 			} else {
 				b[i] = s.str[i];
@@ -8067,7 +8644,7 @@ string string_to_lower(string s) {
 // Attr: [direct_array_access]
 bool string_is_lower(string s) {
 	for (int i = 0; i < s.len; ++i) {
-		if (s.str[ i] >= L'A' && s.str[ i] <= L'Z') {
+		if (s.str[ i] >= 'A' && s.str[ i] <= 'Z') {
 			return false;
 		}
 	}
@@ -8078,7 +8655,7 @@ string string_to_upper(string s) {
 	{ // Unsafe block
 		byte* b = v_malloc(s.len + 1);
 		for (int i = 0; i < s.len; ++i) {
-			if (s.str[i] >= L'a' && s.str[i] <= L'z') {
+			if (s.str[i] >= 'a' && s.str[i] <= 'z') {
 				b[i] = s.str[i] - 32;
 			} else {
 				b[i] = s.str[i];
@@ -8093,7 +8670,7 @@ string string_to_upper(string s) {
 // Attr: [direct_array_access]
 bool string_is_upper(string s) {
 	for (int i = 0; i < s.len; ++i) {
-		if (s.str[ i] >= L'a' && s.str[ i] <= L'z') {
+		if (s.str[ i] >= 'a' && s.str[ i] <= 'z') {
 			return false;
 		}
 	}
@@ -8112,17 +8689,17 @@ string string_capitalize(string s) {
 		return uletter;
 	}
 	string srest = string_substr(s, 1, s.len);
-	string res = string_add(uletter, srest);
+	string res = string__plus(uletter, srest);
 	return res;
 }
 
 // Attr: [direct_array_access]
 bool string_is_capital(string s) {
-	if (s.len == 0 || !(s.str[ 0] >= L'A' && s.str[ 0] <= L'Z')) {
+	if (s.len == 0 || !(s.str[ 0] >= 'A' && s.str[ 0] <= 'Z')) {
 		return false;
 	}
 	for (int i = 1; i < s.len; ++i) {
-		if (s.str[ i] >= L'A' && s.str[ i] <= L'Z') {
+		if (s.str[ i] >= 'A' && s.str[ i] <= 'Z') {
 			return false;
 		}
 	}
@@ -8133,8 +8710,8 @@ string string_title(string s) {
 	Array_string words = string_split(s, _SLIT(" "));
 	Array_string tit = __new_array_with_default(0, 0, sizeof(string), 0);
 	// FOR IN array
-	for (int _t552 = 0; _t552 < words.len; ++_t552) {
-		string word = ((string*)words.data)[_t552];
+	for (int _t575 = 0; _t575 < words.len; ++_t575) {
+		string word = ((string*)words.data)[_t575];
 		array_push((array*)&tit, _MOV((string[]){ string_capitalize(word) }));
 	}
 	string title = Array_string_join(tit, _SLIT(" "));
@@ -8144,8 +8721,8 @@ string string_title(string s) {
 bool string_is_title(string s) {
 	Array_string words = string_split(s, _SLIT(" "));
 	// FOR IN array
-	for (int _t555 = 0; _t555 < words.len; ++_t555) {
-		string word = ((string*)words.data)[_t555];
+	for (int _t578 = 0; _t578 < words.len; ++_t578) {
+		string word = ((string*)words.data)[_t578];
 		if (!string_is_capital(word)) {
 			return false;
 		}
@@ -8186,16 +8763,16 @@ string string_trim(string s, string cutset) {
 	for (;;) {
 		if (!(pos_left <= s.len && pos_right >= -1 && cs_match)) break;
 		cs_match = false;
-		for (int _t564 = 0; _t564 < cutset.len; ++_t564) {
-			byte cs = cutset.str[_t564];
+		for (int _t587 = 0; _t587 < cutset.len; ++_t587) {
+			byte cs = cutset.str[_t587];
 			if (s.str[ pos_left] == cs) {
 				pos_left++;
 				cs_match = true;
 				break;
 			}
 		}
-		for (int _t565 = 0; _t565 < cutset.len; ++_t565) {
-			byte cs = cutset.str[_t565];
+		for (int _t588 = 0; _t588 < cutset.len; ++_t588) {
+			byte cs = cutset.str[_t588];
 			if (s.str[ pos_right] == cs) {
 				pos_right--;
 				cs_match = true;
@@ -8218,8 +8795,8 @@ string string_trim_left(string s, string cutset) {
 	for (;;) {
 		if (!(pos < s.len)) break;
 		bool found = false;
-		for (int _t569 = 0; _t569 < cutset.len; ++_t569) {
-			byte cs = cutset.str[_t569];
+		for (int _t592 = 0; _t592 < cutset.len; ++_t592) {
+			byte cs = cutset.str[_t592];
 			if (s.str[ pos] == cs) {
 				found = true;
 				break;
@@ -8242,8 +8819,8 @@ string string_trim_right(string s, string cutset) {
 	for (;;) {
 		if (!(pos >= 0)) break;
 		bool found = false;
-		for (int _t572 = 0; _t572 < cutset.len; ++_t572) {
-			byte cs = cutset.str[_t572];
+		for (int _t595 = 0; _t595 < cutset.len; ++_t595) {
+			byte cs = cutset.str[_t595];
 			if (s.str[ pos] == cs) {
 				found = true;
 			}
@@ -8274,20 +8851,20 @@ string string_trim_suffix(string s, string str) {
 }
 
 int compare_strings(string* a, string* b) {
-	if (string_lt(/*rec*/*a, *b)) {
+	if (string__lt(*a, *b)) {
 		return -1;
 	}
-	if (string_gt(/*rec*/*a, *b)) {
+	if (string__lt(*b, *a)) {
 		return 1;
 	}
 	return 0;
 }
 
 VV_LOCAL_SYMBOL int compare_strings_reverse(string* a, string* b) {
-	if (string_lt(/*rec*/*a, *b)) {
+	if (string__lt(*a, *b)) {
 		return 1;
 	}
-	if (string_gt(/*rec*/*a, *b)) {
+	if (string__lt(*b, *a)) {
 		return -1;
 	}
 	return 0;
@@ -8359,7 +8936,7 @@ ustring string_ustring_tmp(string s) {
 }
 
 VV_LOCAL_SYMBOL bool ustring_eq(ustring u, ustring a) {
-	if (u.len != a.len || string_ne(u.s, a.s)) {
+	if (u.len != a.len || !string__eq(u.s, a.s)) {
 		return false;
 	}
 	return true;
@@ -8370,7 +8947,7 @@ VV_LOCAL_SYMBOL bool ustring_ne(ustring u, ustring a) {
 }
 
 VV_LOCAL_SYMBOL bool ustring_lt(ustring u, ustring a) {
-	return string_lt(u.s, a.s);
+	return string__lt(u.s, a.s);
 }
 
 VV_LOCAL_SYMBOL bool ustring_le(ustring u, ustring a) {
@@ -8386,7 +8963,7 @@ VV_LOCAL_SYMBOL bool ustring_ge(ustring u, ustring a) {
 }
 
 ustring ustring_add(ustring u, ustring a) {
-	ustring res = (ustring){.s = string_add(u.s, a.s),.runes = __new_array(0, u.s.len + a.s.len, ((int)(/*SizeOf*/ sizeof(int)))),.len = 0,};
+	ustring res = (ustring){.s = string__plus(u.s, a.s),.runes = __new_array(0, u.s.len + a.s.len, ((int)(/*SizeOf*/ sizeof(int)))),.len = 0,};
 	int j = 0;
 	for (int i = 0; i < u.s.len; i++) {
 		int char_len = utf8_char_len(u.s.str[i]);
@@ -8422,7 +8999,7 @@ int ustring_index_after(ustring u, ustring p, int start) {
 		int j = 0;
 		int ii = i;
 		for (;;) {
-			if (!(j < p.len && string_eq(ustring_at(u, ii), ustring_at(p, j)))) break;
+			if (!(j < p.len && string__eq(ustring_at(u, ii), ustring_at(p, j)))) break;
 			j++;
 			ii++;
 		}
@@ -8458,7 +9035,7 @@ string ustring_substr(ustring u, int _start, int _end) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (_start > _end || _start > u.len || _end > u.len || _start < 0 || _end < 0) {
-			v_panic(_STR("substr(%"PRId32"\000, %"PRId32"\000) out of bounds (len=%"PRId32"\000)", 4, _start, _end, u.len));
+			v_panic( str_intp(4, _MOV((StrIntpData[]){{_SLIT("substr("), 0xfe07, {.d_i32 = _start}}, {_SLIT(", "), 0xfe07, {.d_i32 = _end}}, {_SLIT(") out of bounds (len="), 0xfe07, {.d_i32 = u.len}}, {_SLIT(")"), 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -8484,7 +9061,7 @@ VV_LOCAL_SYMBOL byte string_at(string s, int idx) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (idx < 0 || idx >= s.len) {
-			v_panic(_STR("string index out of range: %"PRId32"\000 / %"PRId32"", 2, idx, s.len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("string index out of range: "), 0xfe07, {.d_i32 = idx}}, {_SLIT(" / "), 0xfe07, {.d_i32 = s.len}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -8498,7 +9075,7 @@ string ustring_at(ustring u, int idx) {
 	#if !defined(CUSTOM_DEFINE_no_bounds_checking)
 	{
 		if (idx < 0 || idx >= u.len) {
-			v_panic(_STR("string index out of range: %"PRId32"\000 / %"PRId32"", 2, idx, u.runes.len));
+			v_panic( str_intp(3, _MOV((StrIntpData[]){{_SLIT("string index out of range: "), 0xfe07, {.d_i32 = idx}}, {_SLIT(" / "), 0xfe07, {.d_i32 = u.runes.len}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 		}
 	}
 	#endif
@@ -8514,25 +9091,26 @@ VV_LOCAL_SYMBOL void ustring_free(ustring* u) {
 }
 
 bool byte_is_digit(byte c) {
-	return c >= L'0' && c <= L'9';
+	return c >= '0' && c <= '9';
 }
 
 bool byte_is_hex_digit(byte c) {
-	return byte_is_digit(c) || (c >= L'a' && c <= L'f') || (c >= L'A' && c <= L'F');
+	return byte_is_digit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
 bool byte_is_oct_digit(byte c) {
-	return c >= L'0' && c <= L'7';
+	return c >= '0' && c <= '7';
 }
 
 bool byte_is_bin_digit(byte c) {
-	return c == L'0' || c == L'1';
+	return c == '0' || c == '1';
 }
 
 bool byte_is_letter(byte c) {
-	return (c >= L'a' && c <= L'z') || (c >= L'A' && c <= L'Z');
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
+// Attr: [manualfree]
 // Attr: [unsafe]
 void string_free(string* s) {
 	if (s->is_lit == -98761234) {
@@ -8546,7 +9124,7 @@ void string_free(string* s) {
 		#endif
 		return;
 	}
-	if (s->is_lit == 1 || s->len == 0) {
+	if (s->is_lit == 1 || s->len == 0 || s->str == 0) {
 		return;
 	}
 	v_free(s->str);
@@ -8618,8 +9196,8 @@ string Array_string_join(Array_string a, string sep) {
 	}
 	int len = 0;
 	// FOR IN array
-	for (int _t638 = 0; _t638 < a.len; ++_t638) {
-		string val = ((string*)a.data)[_t638];
+	for (int _t661 = 0; _t661 < a.len; ++_t661) {
+		string val = ((string*)a.data)[_t661];
 		len += val.len + sep.len;
 	}
 	len -= sep.len;
@@ -8673,8 +9251,8 @@ string string_limit(string s, int max) {
 int string_hash(string s) {
 	u32 h = ((u32)(0U));
 	if (h == 0U && s.len > 0) {
-		for (int _t645 = 0; _t645 < s.len; ++_t645) {
-			byte c = s.str[_t645];
+		for (int _t668 = 0; _t668 < s.len; ++_t668) {
+			byte c = s.str[_t668];
 			h = h * 31U + ((u32)(c));
 		}
 	}
@@ -8692,7 +9270,7 @@ Array_byte string_bytes(string s) {
 
 string string_repeat(string s, int count) {
 	if (count < 0) {
-		v_panic(_STR("string.repeat: count is negative: %"PRId32"", 1, count));
+		v_panic( str_intp(2, _MOV((StrIntpData[]){{_SLIT("string.repeat: count is negative: "), 0xfe07, {.d_i32 = count}}, {_SLIT0, 0, { .d_c = 0 }}})) );
 	} else if (count == 0) {
 		return _SLIT("");
 	} else if (count == 1) {
@@ -8746,7 +9324,7 @@ Array_string string_fields(string s) {
 }
 
 string string_strip_margin(string s) {
-	return string_strip_margin_custom(s, L'|');
+	return string_strip_margin_custom(s, '|');
 }
 
 // Attr: [direct_array_access]
@@ -8755,7 +9333,7 @@ string string_strip_margin_custom(string s, byte del) {
 	if (byte_is_space(sep)) {
 		eprintln(_SLIT("Warning: `strip_margin` cannot use white-space as a delimiter"));
 		eprintln(_SLIT("    Defaulting to `|`"));
-		sep = L'|';
+		sep = '|';
 	}
 	byte* ret = v_malloc(s.len + 1);
 	int count = 0;
@@ -8836,6 +9414,524 @@ string charptr_vstring_literal(charptr cp) {
 // Attr: [unsafe]
 string charptr_vstring_literal_with_len(charptr cp, int len) {
 	return (string){.str = ((byteptr)(cp)), .len = len, .is_lit = 1};
+}
+
+string StrIntpType_str(StrIntpType x) {
+
+	if (x == (StrIntpType_si_no_str)) {
+		return _SLIT("no_str");
+	}
+	else if (x == (StrIntpType_si_c)) {
+		return _SLIT("c");
+	}
+	else if (x == (StrIntpType_si_u8)) {
+		return _SLIT("u8");
+	}
+	else if (x == (StrIntpType_si_i8)) {
+		return _SLIT("i8");
+	}
+	else if (x == (StrIntpType_si_u16)) {
+		return _SLIT("u16");
+	}
+	else if (x == (StrIntpType_si_i16)) {
+		return _SLIT("i16");
+	}
+	else if (x == (StrIntpType_si_u32)) {
+		return _SLIT("u32");
+	}
+	else if (x == (StrIntpType_si_i32)) {
+		return _SLIT("i32");
+	}
+	else if (x == (StrIntpType_si_u64)) {
+		return _SLIT("u64");
+	}
+	else if (x == (StrIntpType_si_i64)) {
+		return _SLIT("i64");
+	}
+	else if (x == (StrIntpType_si_f32)) {
+		return _SLIT("f32");
+	}
+	else if (x == (StrIntpType_si_f64)) {
+		return _SLIT("f64");
+	}
+	else if (x == (StrIntpType_si_g32)) {
+		return _SLIT("f32");
+	}
+	else if (x == (StrIntpType_si_g64)) {
+		return _SLIT("f64");
+	}
+	else if (x == (StrIntpType_si_e32)) {
+		return _SLIT("f32");
+	}
+	else if (x == (StrIntpType_si_e64)) {
+		return _SLIT("f64");
+	}
+	else if (x == (StrIntpType_si_s)) {
+		return _SLIT("s");
+	}
+	else if (x == (StrIntpType_si_p)) {
+		return _SLIT("p");
+	}
+	else if (x == (StrIntpType_si_vp)) {
+		return _SLIT("vp");
+	};
+	return (string){.str=(byteptr)"", .is_lit=1};
+}
+
+VV_LOCAL_SYMBOL f64 fabs64(f64 x) {
+	if (x < 0) {
+		return -x;
+	}
+	return x;
+}
+
+VV_LOCAL_SYMBOL f32 fabs32(f32 x) {
+	if (x < 0) {
+		return -x;
+	}
+	return x;
+}
+
+VV_LOCAL_SYMBOL u64 abs64(i64 x) {
+	if (x < 0) {
+		return ((u64)(-x));
+	}
+	return ((u64)(x));
+}
+
+u64 get_str_intp_u64_format(StrIntpType fmt_type, int in_width, int in_precision, bool in_tail_zeros, bool in_sign, u8 in_pad_ch, int in_base, bool in_upper_case) {
+	u64 width = (in_width != 0 ? (abs64(in_width)) : (((u64)(0U))));
+	u64 allign = (in_width > 0 ? (((u64)(1 << 5))) : (((u64)(0U))));
+	u64 upper_case = (in_upper_case ? (((u64)(1 << 7))) : (((u64)(0U))));
+	u64 sign = (in_sign ? (((u64)(1 << 8))) : (((u64)(0U))));
+	u64 precision = (in_precision != 987698 ? ((((u64)((in_precision & 0x7F))) << 9U)) : (((u64)(0x7FU)) << 9U));
+	u32 tail_zeros = (in_tail_zeros ? (((u32)(1U)) << 16U) : (((u32)(0U))));
+	u64 base = ((u64)(((in_base & 0xf)) << 27));
+	u64 res = ((u64)(((((((((((((u64)(fmt_type)) & 0x1FU)) | allign) | upper_case) | sign) | precision) | tail_zeros) | (((u64)((width & 0x3FFU))) << 17U)) | base) | (((u64)(in_pad_ch)) << 31U))));
+	return res;
+}
+
+u32 get_str_intp_u32_format(StrIntpType fmt_type, int in_width, int in_precision, bool in_tail_zeros, bool in_sign, u8 in_pad_ch, int in_base, bool in_upper_case) {
+	u64 width = (in_width != 0 ? (abs64(in_width)) : (((u32)(0U))));
+	u32 allign = (in_width > 0 ? (((u32)(1 << 5))) : (((u32)(0U))));
+	u32 upper_case = (in_upper_case ? (((u32)(1 << 7))) : (((u32)(0U))));
+	u32 sign = (in_sign ? (((u32)(1 << 8))) : (((u32)(0U))));
+	u32 precision = (in_precision != 987698 ? ((((u32)((in_precision & 0x7F))) << 9U)) : (((u32)(0x7FU)) << 9U));
+	u32 tail_zeros = (in_tail_zeros ? (((u32)(1U)) << 16U) : (((u32)(0U))));
+	u32 base = ((u32)(((in_base & 0xf)) << 27));
+	u32 res = ((u32)(((((((((((((u32)(fmt_type)) & 0x1FU)) | allign) | upper_case) | sign) | precision) | tail_zeros) | (((u32)((width & 0x3FFU))) << 17U)) | base) | (((u32)((in_pad_ch & 1))) << 31U))));
+	return res;
+}
+
+// Attr: [manualfree]
+VV_LOCAL_SYMBOL void StrIntpData_get_fmt_format(StrIntpData data, strings__Builder* sb) {
+	u32 x = data.fmt;
+	StrIntpType typ = ((StrIntpType)((x & 0x1FU)));
+	int allign = ((int)(((x >> 5U) & 0x01U)));
+	bool upper_case = ((((x >> 7U) & 0x01U)) > 0U ? (true) : (false));
+	int sign = ((int)(((x >> 8U) & 0x01U)));
+	int precision = ((int)(((x >> 9U) & 0x7FU)));
+	bool tail_zeros = ((((x >> 16U) & 0x01U)) > 0U ? (true) : (false));
+	int width = ((int)(((i16)(((x >> 17U) & 0x3FFU)))));
+	int base = (((int)(x >> 27U)) & 0xF);
+	byte fmt_pad_ch = ((byte)(((x >> 31U) & 0xFFU)));
+	if (typ == StrIntpType_si_no_str) {
+		return;
+	}
+	if (base > 0) {
+		base += 2;
+	}
+	byte pad_ch = ((byte)(' '));
+	if (fmt_pad_ch > 0) {
+		pad_ch = '0';
+	}
+	int len0_set = (width > 0 ? (width) : (-1));
+	int len1_set = (precision == 0x7F ? (-1) : (precision));
+	bool sign_set = (sign == 1 ? (true) : (false));
+	strconv__BF_param bf = (strconv__BF_param){
+		.pad_ch = pad_ch,
+		.len0 = len0_set,
+		.len1 = len1_set,
+		.positive = true,
+		.sign_flag = sign_set,
+		.allign = strconv__Align_text_left,
+		.rm_tail_zero = tail_zeros,
+	};
+	if (fmt_pad_ch == 0) {
+
+		if (allign == (0)) {
+			bf.allign = strconv__Align_text_left;
+		}
+		else if (allign == (1)) {
+			bf.allign = strconv__Align_text_right;
+		}
+		else {
+			bf.allign = strconv__Align_text_left;
+		};
+	} else {
+		bf.allign = strconv__Align_text_right;
+	}
+	{ // Unsafe block
+		if (typ == StrIntpType_si_s) {
+			string s = _SLIT("");
+			if (upper_case) {
+				s = string_to_upper(data.d.d_s);
+			} else {
+				s = string_clone(data.d.d_s);
+			}
+			if (width == 0) {
+				strings__Builder_write_string(sb, s);
+			} else {
+				strconv__format_str_sb(s, bf, sb);
+			}
+			string_free(&s);
+			return;
+		}
+		if ((typ == StrIntpType_si_i8 || typ == StrIntpType_si_i16 || typ == StrIntpType_si_i32 || typ == StrIntpType_si_i64)) {
+			i64 d = data.d.d_i64;
+			if (typ == StrIntpType_si_i8) {
+				d = ((i64)(data.d.d_i8));
+			} else if (typ == StrIntpType_si_i16) {
+				d = ((i64)(data.d.d_i16));
+			} else if (typ == StrIntpType_si_i32) {
+				d = ((i64)(data.d.d_i32));
+			}
+			if (base == 0) {
+				if (width == 0) {
+					string d_str = i64_str(d);
+					strings__Builder_write_string(sb, d_str);
+					string_free(&d_str);
+					return;
+				}
+				if (d < 0) {
+					bf.positive = false;
+				}
+				strconv__format_dec_sb(abs64(d), bf, sb);
+			} else {
+				string hx = strconv__format_int(d, base);
+				if (upper_case) {
+					string tmp = hx;
+					hx = string_to_upper(hx);
+					string_free(&tmp);
+				}
+				if (width == 0) {
+					strings__Builder_write_string(sb, hx);
+				} else {
+					strconv__format_str_sb(hx, bf, sb);
+				}
+				string_free(&hx);
+			}
+			return;
+		}
+		if ((typ == StrIntpType_si_u8 || typ == StrIntpType_si_u16 || typ == StrIntpType_si_u32 || typ == StrIntpType_si_u64)) {
+			u64 d = data.d.d_u64;
+			if (typ == StrIntpType_si_u8) {
+				d = ((u64)(data.d.d_u8));
+			} else if (typ == StrIntpType_si_u16) {
+				d = ((u64)(data.d.d_u16));
+			} else if (typ == StrIntpType_si_u32) {
+				d = ((u64)(data.d.d_u32));
+			}
+			if (base == 0) {
+				if (width == 0) {
+					string d_str = u64_str(d);
+					strings__Builder_write_string(sb, d_str);
+					string_free(&d_str);
+					return;
+				}
+				strconv__format_dec_sb(d, bf, sb);
+			} else {
+				string hx = strconv__format_uint(d, base);
+				if (upper_case) {
+					string tmp = hx;
+					hx = string_to_upper(hx);
+					string_free(&tmp);
+				}
+				if (width == 0) {
+					strings__Builder_write_string(sb, hx);
+				} else {
+					strconv__format_str_sb(hx, bf, sb);
+				}
+				string_free(&hx);
+			}
+			return;
+		}
+		if (typ == StrIntpType_si_p) {
+			u64 d = data.d.d_u64;
+			base = 16;
+			if (base == 0) {
+				if (width == 0) {
+					string d_str = u64_str(d);
+					strings__Builder_write_string(sb, d_str);
+					string_free(&d_str);
+					return;
+				}
+				strconv__format_dec_sb(d, bf, sb);
+			} else {
+				string hx = strconv__format_uint(d, base);
+				if (upper_case) {
+					string tmp = hx;
+					hx = string_to_upper(hx);
+					string_free(&tmp);
+				}
+				if (width == 0) {
+					strings__Builder_write_string(sb, hx);
+				} else {
+					strconv__format_str_sb(hx, bf, sb);
+				}
+				string_free(&hx);
+			}
+			return;
+		}
+		bool use_default_str = false;
+		if (width == 0 && precision == 0x7F) {
+			bf.len1 = 3;
+			use_default_str = true;
+		}
+		if (bf.len1 < 0) {
+			bf.len1 = 3;
+		}
+
+		if (typ == (StrIntpType_si_f32)) {
+			if (use_default_str) {
+				string f = f32_str(data.d.d_f32);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			} else {
+				if (data.d.d_f32 < 0) {
+					bf.positive = false;
+				}
+				string f = strconv__format_fl(data.d.d_f32, bf);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			}
+		}
+		else if (typ == (StrIntpType_si_f64)) {
+			if (use_default_str) {
+				string f = f64_str(data.d.d_f64);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			} else {
+				if (data.d.d_f64 < 0) {
+					bf.positive = false;
+				}
+				strconv__Float64u f_union = (strconv__Float64u){.f = data.d.d_f64,};
+				if (f_union.u == _const_strconv__double_minus_zero) {
+					bf.positive = false;
+				}
+				string f = strconv__format_fl(data.d.d_f64, bf);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			}
+		}
+		else if (typ == (StrIntpType_si_g32)) {
+			if (use_default_str) {
+				string f = f32_strg(data.d.d_f32);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			} else {
+				if (data.d.d_f32 < 0) {
+					bf.positive = false;
+				}
+				f32 d = fabs32(data.d.d_f32);
+				if (d < 999999.0 && d >= 0.00001) {
+					string f = strconv__format_fl(data.d.d_f32, bf);
+					if (upper_case) {
+						string tmp = f;
+						f = string_to_upper(f);
+						string_free(&tmp);
+					}
+					strings__Builder_write_string(sb, f);
+					string_free(&f);
+					return;
+				}
+				string f = strconv__format_es(data.d.d_f32, bf);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			}
+		}
+		else if (typ == (StrIntpType_si_g64)) {
+			if (use_default_str) {
+				string f = f64_strg(data.d.d_f64);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			} else {
+				if (data.d.d_f64 < 0) {
+					bf.positive = false;
+				}
+				f64 d = fabs64(data.d.d_f64);
+				if (d < 999999.0 && d >= 0.00001) {
+					string f = strconv__format_fl(data.d.d_f64, bf);
+					if (upper_case) {
+						string tmp = f;
+						f = string_to_upper(f);
+						string_free(&tmp);
+					}
+					strings__Builder_write_string(sb, f);
+					string_free(&f);
+					return;
+				}
+				string f = strconv__format_es(data.d.d_f64, bf);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			}
+		}
+		else if (typ == (StrIntpType_si_e32)) {
+			bf.len1 = 6;
+			if (use_default_str) {
+				string f = f32_str(data.d.d_f32);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			} else {
+				if (data.d.d_f32 < 0) {
+					bf.positive = false;
+				}
+				string f = strconv__format_es(data.d.d_f32, bf);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			}
+		}
+		else if (typ == (StrIntpType_si_e64)) {
+			bf.len1 = 6;
+			if (use_default_str) {
+				string f = f64_str(data.d.d_f64);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			} else {
+				if (data.d.d_f64 < 0) {
+					bf.positive = false;
+				}
+				string f = strconv__format_es(data.d.d_f64, bf);
+				if (upper_case) {
+					string tmp = f;
+					f = string_to_upper(f);
+					string_free(&tmp);
+				}
+				strings__Builder_write_string(sb, f);
+				string_free(&f);
+			}
+		}
+		else if (typ == (StrIntpType_si_c)) {
+			strings__Builder_write_string(sb, utf32_to_str(data.d.d_c));
+		}
+		else if (typ == (StrIntpType_si_vp)) {
+			strings__Builder_write_string(sb, u64_hex(((u64)(data.d.d_vp))));
+		}
+		else {
+			strings__Builder_write_string(sb, _SLIT("***ERROR!***"));
+		};
+	}
+}
+
+// Attr: [manualfree]
+string str_intp(int data_len, voidptr in_data) {
+	strings__Builder res = strings__new_builder(256);
+	{ // Unsafe block
+		int i = 0;
+		for (;;) {
+			if (!(i < data_len)) break;
+			StrIntpData* data = ((StrIntpData*)(((byte*)(in_data)) + (((int)(/*SizeOf*/ sizeof(StrIntpData))) * i)));
+			if (data->str.len != 0) {
+				strings__Builder_write_string(&res, data->str);
+			}
+			if (data->fmt != 0U) {
+				StrIntpData_get_fmt_format(/*rec*/*data, &res);
+			}
+			i++;
+		}
+	}
+	string ret = strings__Builder_str(&res);
+	strings__Builder_free(&res);
+	return ret;
+}
+
+// Attr: [inline]
+inline string str_intp_sq(string in_str) {
+	return  str_intp(3, _MOV((StrIntpData[]){{_SLIT("str_intp(2, _MOV((StrIntpData[]){{_SLIT(\"\'\"), "), 0xfe10, {.d_s = _const_si_s_code}}, {_SLIT(", {.d_s = "), 0xfe10, {.d_s = in_str}}, {_SLIT("}},{_SLIT(\"\'\"), 0, {.d_c = 0 }}}))"), 0, { .d_c = 0 }}})) ;
+}
+
+// Attr: [inline]
+inline string str_intp_rune(string in_str) {
+	return  str_intp(3, _MOV((StrIntpData[]){{_SLIT("str_intp(2, _MOV((StrIntpData[]){{_SLIT(\"`\"), "), 0xfe10, {.d_s = _const_si_s_code}}, {_SLIT(", {.d_s = "), 0xfe10, {.d_s = in_str}}, {_SLIT("}},{_SLIT(\"`\"), 0, {.d_c = 0 }}}))"), 0, { .d_c = 0 }}})) ;
+}
+
+// Attr: [inline]
+inline string str_intp_g32(string in_str) {
+	return  str_intp(3, _MOV((StrIntpData[]){{_SLIT("str_intp(1, _MOV((StrIntpData[]){{_SLIT(\"\"), "), 0xfe10, {.d_s = _const_si_g32_code}}, {_SLIT(", {.d_f32 = "), 0xfe10, {.d_s = in_str}}, {_SLIT(" }}}))"), 0, { .d_c = 0 }}})) ;
+}
+
+// Attr: [inline]
+inline string str_intp_g64(string in_str) {
+	return  str_intp(3, _MOV((StrIntpData[]){{_SLIT("str_intp(1, _MOV((StrIntpData[]){{_SLIT(\"\"), "), 0xfe10, {.d_s = _const_si_g64_code}}, {_SLIT(", {.d_f64 = "), 0xfe10, {.d_s = in_str}}, {_SLIT(" }}}))"), 0, { .d_c = 0 }}})) ;
+}
+
+string str_intp_sub(string base_str, string in_str) {
+	Option_int _t721 = string_index(base_str, _SLIT("%%"));
+	if (_t721.state != 0) { /*or block*/ 
+		IError err = _t721.err;
+		eprintln(_SLIT("No strin interpolation %% parameteres"));
+		v_exit(1);
+	}
+ 	int index =  (*(int*)_t721.data);
+	if (index + 2 < base_str.len) {
+		return  str_intp(5, _MOV((StrIntpData[]){{_SLIT("str_intp(2, _MOV((StrIntpData[]){{_SLIT(\""), 0xfe10, {.d_s = string_substr(base_str, 0, index)}}, {_SLIT("\"), "), 0xfe10, {.d_s = _const_si_s_code}}, {_SLIT(", {.d_s = "), 0xfe10, {.d_s = in_str}}, {_SLIT(" }},{_SLIT(\""), 0xfe10, {.d_s = string_substr(base_str, index + 2, base_str.len)}}, {_SLIT("\"), 0, {.d_c = 0}}}))"), 0, { .d_c = 0 }}})) ;
+	}
+	return  str_intp(4, _MOV((StrIntpData[]){{_SLIT("str_intp(1, _MOV((StrIntpData[]){{_SLIT(\""), 0xfe10, {.d_s = string_substr(base_str, 0, index)}}, {_SLIT("\"), "), 0xfe10, {.d_s = _const_si_s_code}}, {_SLIT(", {.d_s = "), 0xfe10, {.d_s = in_str}}, {_SLIT(" }}}))"), 0, { .d_c = 0 }}})) ;
 }
 
 u16* string_to_wide(string _str) {
@@ -9039,10 +10135,35 @@ int utf8_str_visible_length(string s) {
 	return l;
 }
 
+// Attr: [unsafe]
+VV_LOCAL_SYMBOL Array_f64 main__as_f64(voidptr data, int len) {
+	array res = (array){.element_size = 8,.data = data,.len = len,.cap = len,};
+	return res;
+}
+
+// Attr: [unsafe]
+VV_LOCAL_SYMBOL Array_int main__as_int(voidptr data, int len) {
+	array res = (array){.element_size = 4,.data = data,.len = len,.cap = len,};
+	return res;
+}
+
+// TypeDecl
+int main__NumericVector_length(main__NumericVector v) {
+	int _t745 = LENGTH(v.sexp);
+	return _t745;
+}
+
+Array_f64 main__NumericVector_f64(main__NumericVector n) {
+	int len = ((int)(main__NumericVector_length(n)));
+	voidptr data = REAL(n.sexp);
+	Array_f64 _t746 = main__as_f64(data, len);
+	return _t746;
+}
+
 // Attr: [rv_export]
 f64 main__test(f64 x) {
-	f64 _t685 = x + 1;
-	return _t685;
+	f64 _t747 = x + 1;
+	return _t747;
 }
 
 // Attr: [rv_export]
@@ -9051,17 +10172,20 @@ multi_return_f64_f64 main__test2(f64 x) {
 }
 
 VV_LOCAL_SYMBOL f64 main__test_r(SEXP x) {
-	f64 _t687 = SCALAR_DVAL(x);
-	return _t687;
+	f64 _t749 = SCALAR_DVAL(x);
+	return _t749;
 }
 
-VV_LOCAL_SYMBOL void main__test_r2(SEXP x) {
-	voidptr y = REAL(x);
-	println(voidptr_str(y));
+// Attr: [rv_export]
+VV_LOCAL_SYMBOL int main__get_length(SEXP x) {
+	main__NumericVector n = (main__NumericVector){.sexp = x,};
+	int _t750 = main__NumericVector_length(n);
+	return _t750;
 }
 
 void _vinit(int ___argc, voidptr ___argv) {
 	as_cast_type_indexes = new_array_from_c_array(1, 1, sizeof(VCastTypeIndexName), _MOV((VCastTypeIndexName[1]){(VCastTypeIndexName){.tindex = 0,.tname = _SLIT("unknown")}}));
+
 	builtin_init();
 	vinit_string_literals();
 	// Initializations for module strings :
@@ -9224,6 +10348,10 @@ void _vinit(int ___argc, voidptr ___argv) {
 		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
 		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08}));
 	// Initializations for module strconv :
+	_const_strconv__single_plus_zero = ((u32)(0x00000000U));
+	_const_strconv__single_minus_zero = ((u32)(0x80000000U));
+	_const_strconv__single_plus_infinity = ((u32)(0x7F800000U));
+	_const_strconv__single_minus_infinity = ((u32)(0xFF800000U));
 	_const_strconv__double_plus_zero = ((u64)(0x0000000000000000U));
 	_const_strconv__double_minus_zero = ((u64)(0x8000000000000000U));
 	_const_strconv__double_plus_infinity = ((u64)(0x7FF0000000000000U));
@@ -9324,9 +10452,9 @@ void _vinit(int ___argc, voidptr ___argv) {
 	_const_strconv__mantbits64 = ((u32)(52U));
 	_const_strconv__expbits64 = ((u32)(11U));
 	_const_strconv__dec_round = new_array_from_c_array(20, 20, sizeof(f64), _MOV((f64[20]){
-		((f64)(0.44)), 0.044, 0.0044, 0.00044, 0.000044, 0.0000044, 0.00000044, 0.000000044, 0.0000000044,
-		0.00000000044, 0.000000000044, 0.0000000000044, 0.00000000000044, 0.000000000000044, 0.0000000000000044, 0.00000000000000044, 0.000000000000000044,
-		0.0000000000000000044, 0.00000000000000000044, 0.000000000000000000044}));
+		((f64)(0.5)), 0.05, 0.005, 0.0005, 0.00005, 0.000005, 0.0000005, 0.00000005, 0.000000005,
+		0.0000000005, 0.00000000005, 0.000000000005, 0.0000000000005, 0.00000000000005, 0.000000000000005, 0.0000000000000005, 0.00000000000000005,
+		0.000000000000000005, 0.0000000000000000005, 0.00000000000000000005}));
 	_const_strconv__powers_of_10 = new_array_from_c_array(18, 18, sizeof(u64), _MOV((u64[18]){
 		((u64)(1e0)), ((u64)(1e1)), ((u64)(1e2)), ((u64)(1e3)), ((u64)(1e4)), ((u64)(1e5)), ((u64)(1e6)), ((u64)(1e7)), ((u64)(1e8)),
 		((u64)(1e9)), ((u64)(1e10)), ((u64)(1e11)), ((u64)(1e12)), ((u64)(1e13)), ((u64)(1e14)), ((u64)(1e15)), ((u64)(1e16)),
@@ -9429,6 +10557,7 @@ void _vinit(int ___argc, voidptr ___argv) {
 	_const_hash_mask = ((u32)(0x00FFFFFFU));
 	_const_probe_inc = ((u32)(0x01000000U));
 	_const_none__ = I_None___to_Interface_IError((None__*)memdup(&(None__){.msg = (string){.str=(byteptr)"", .is_lit=1},.code = 0,}, sizeof(None__)));
+	_const_prealloc_block_size = 16 * 1024 * 1024;
 	_const_mid_index = _const_degree - 1;
 	_const_max_len = 2 * _const_degree - 1;
 	_const_children_bytes = /*SizeOf*/ sizeof(voidptr) * (_const_max_len + 1);
