@@ -1,3 +1,5 @@
+import r {NumericVector}
+
 [rv_export]
 pub fn test(x f64) f64{
    return x + 1
@@ -15,5 +17,6 @@ fn test_r(x C.SEXP) f64{
 [rv_export]
 fn get_length(x C.SEXP) int{
   n := NumericVector{x}
-  return n.length()
+  l := n.length()
+  return l
 }

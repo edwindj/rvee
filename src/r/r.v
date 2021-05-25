@@ -1,3 +1,5 @@
+module r
+
 #include <R.h>
 #include <Rinternals.h>
 

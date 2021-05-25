@@ -53,7 +53,7 @@ typedef struct RepIndex RepIndex;
 typedef union StrIntpMem StrIntpMem;
 typedef struct StrIntpCgenData StrIntpCgenData;
 typedef struct StrIntpData StrIntpData;
-typedef struct main__NumericVector main__NumericVector;
+typedef struct r__NumericVector r__NumericVector;
 
 // V typedefs2:
 typedef struct Option_int Option_int;
@@ -616,28 +616,28 @@ static inline uint64_t wy2u0k(uint64_t r, uint64_t k){ _wymum(&r,&k); return k; 
 #include <float.h>
 #endif
 
-// added by module `main`:
+// added by module `r`:
 
 #if defined(__has_include)
 
 #if __has_include(<R.h>)
 #include <R.h>
 #else
-#error VERROR_MESSAGE Header file <R.h>, needed for module `main` was not found. Please install the corresponding development headers.
+#error VERROR_MESSAGE Header file <R.h>, needed for module `r` was not found. Please install the corresponding development headers.
 #endif
 
 #else
 #include <R.h>
 #endif
 
-// added by module `main`:
+// added by module `r`:
 
 #if defined(__has_include)
 
 #if __has_include(<Rinternals.h>)
 #include <Rinternals.h>
 #else
-#error VERROR_MESSAGE Header file <Rinternals.h>, needed for module `main` was not found. Please install the corresponding development headers.
+#error VERROR_MESSAGE Header file <Rinternals.h>, needed for module `r` was not found. Please install the corresponding development headers.
 #endif
 
 #else
@@ -776,9 +776,9 @@ typedef byte u8;
 typedef string Array_fixed_string_11 [11];
 typedef voidptr Array_fixed_voidptr_11 [11];
 typedef array Array_RepIndex;
-typedef array Array_f64;
-typedef main__NumericVector main__Vector;
 typedef map Map_string_int;
+typedef array Array_f64;
+typedef r__NumericVector r__Vector;
 typedef array Array_u64;
 typedef array Array_u32;
 typedef array Array_strconv__Uint128;
@@ -918,7 +918,7 @@ struct strconv__BF_param {
 	bool rm_tail_zero;
 };
 
-struct main__NumericVector {
+struct r__NumericVector {
 	SEXP sexp;
 };
 
@@ -1629,10 +1629,10 @@ int string_utf32_code(string _rune);
 VV_LOCAL_SYMBOL int utf8_len(byte c);
 int utf8_str_len(string s);
 int utf8_str_visible_length(string s);
-VV_LOCAL_SYMBOL Array_f64 main__as_f64(voidptr data, int len);
-VV_LOCAL_SYMBOL Array_int main__as_int(voidptr data, int len);
-int main__NumericVector_length(main__NumericVector v);
-Array_f64 main__NumericVector_f64(main__NumericVector n);
+VV_LOCAL_SYMBOL Array_f64 r__as_f64(voidptr data, int len);
+VV_LOCAL_SYMBOL Array_int r__as_int(voidptr data, int len);
+int r__NumericVector_length(r__NumericVector v);
+Array_f64 r__NumericVector_f64(r__NumericVector n);
 f64 main__test(f64 x);
 multi_return_f64_f64 main__test2(f64 x);
 VV_LOCAL_SYMBOL f64 main__test_r(SEXP x);
@@ -10136,27 +10136,27 @@ int utf8_str_visible_length(string s) {
 }
 
 // Attr: [unsafe]
-VV_LOCAL_SYMBOL Array_f64 main__as_f64(voidptr data, int len) {
+VV_LOCAL_SYMBOL Array_f64 r__as_f64(voidptr data, int len) {
 	array res = (array){.element_size = 8,.data = data,.len = len,.cap = len,};
 	return res;
 }
 
 // Attr: [unsafe]
-VV_LOCAL_SYMBOL Array_int main__as_int(voidptr data, int len) {
+VV_LOCAL_SYMBOL Array_int r__as_int(voidptr data, int len) {
 	array res = (array){.element_size = 4,.data = data,.len = len,.cap = len,};
 	return res;
 }
 
 // TypeDecl
-int main__NumericVector_length(main__NumericVector v) {
+int r__NumericVector_length(r__NumericVector v) {
 	int _t745 = LENGTH(v.sexp);
 	return _t745;
 }
 
-Array_f64 main__NumericVector_f64(main__NumericVector n) {
-	int len = ((int)(main__NumericVector_length(n)));
+Array_f64 r__NumericVector_f64(r__NumericVector n) {
+	int len = ((int)(r__NumericVector_length(n)));
 	voidptr data = REAL(n.sexp);
-	Array_f64 _t746 = main__as_f64(data, len);
+	Array_f64 _t746 = r__as_f64(data, len);
 	return _t746;
 }
 
@@ -10178,9 +10178,9 @@ VV_LOCAL_SYMBOL f64 main__test_r(SEXP x) {
 
 // Attr: [rv_export]
 VV_LOCAL_SYMBOL int main__get_length(SEXP x) {
-	main__NumericVector n = (main__NumericVector){.sexp = x,};
-	int _t750 = main__NumericVector_length(n);
-	return _t750;
+	r__NumericVector n = (r__NumericVector){.sexp = x,};
+	int l = r__NumericVector_length(n);
+	return l;
 }
 
 void _vinit(int ___argc, voidptr ___argv) {
@@ -10561,6 +10561,7 @@ void _vinit(int ___argc, voidptr ___argv) {
 	_const_mid_index = _const_degree - 1;
 	_const_max_len = 2 * _const_degree - 1;
 	_const_children_bytes = /*SizeOf*/ sizeof(voidptr) * (_const_max_len + 1);
+	// Initializations for module r :
 	// Initializations for module main :
 }
 void _vcleanup() {

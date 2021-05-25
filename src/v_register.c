@@ -2,6 +2,7 @@
 #include <Rinternals.h>
 
 double main__test(double x);
+int main__get_length(SEXP x);
 
 extern SEXP _vtest_test(SEXP x){
   // wrapping SEXP
