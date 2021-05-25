@@ -1,0 +1,2 @@
+CFLAGS = -g -O3 -mtune=native
+
