@@ -12,3 +12,7 @@ pub fn test(x f64) f64{
 fn my_bool() bool {
   return true
 }
+
+[rv_export]
+fn my_test(){
+}

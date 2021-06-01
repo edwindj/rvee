@@ -21,5 +21,5 @@ pub fn (v NumericVector) length() int {
 pub fn (n NumericVector) f64s() []f64 {
 	len := int(n.length())
 	data := C.REAL(n.sexp)
-	return unsafe{as_f64s(data, len)}
+	return unsafe { as_f64s(data, len) }
 }

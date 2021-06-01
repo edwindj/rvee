@@ -1,12 +1,12 @@
 Package: rvee
-Title: R and V integration
+Title: Recreational V programming for R
 Version: 0.1.0.9000
 Authors@R: 
     person(given = "Edwin",
            family = "de Jonge",
            role = c("aut", "cre"),
            email = "edwindjonge@gmail.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0000-0002-6580-4718"))
 Description: Recreational V programming with R
 License: MIT + file LICENSE
 Encoding: UTF-8

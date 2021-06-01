@@ -1,2 +1,0 @@
-useDynLib(rvee, .registration=TRUE)
-exportPattern("^[[:alpha:]]+")
