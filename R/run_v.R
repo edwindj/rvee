@@ -1,11 +1,17 @@
-run_v_to_c <- function(dir="./src", pkg="vtest"){
+run_v_to_c <- function(dir="./src", pkg="vtest", ...){
   # TODO store v.exe
   old_wd <- setwd(dir)
   on.exit(setwd(old_wd))
-  system2( "v"
-         , args = c( "-o", sprintf("%s.c", pkg)
-                   , "-shared"
-                   , "."
-                   )
-         )
+  r_mod <- system.file("v", package="rvee")
+  command <- "v"
+  #TODO set VCACHE
+  args = c( "-o"   , sprintf("%s.c", pkg)
+          , "-shared"
+          , "-path", shQuote(sprintf("%s|@vlib|@vmodules", r_mod))
+          , "."
+          )
+  system2(command, args = args, ...)
+  # command <- paste(c(shQuote(command), args), collapse = " ")
+  # print(command)
+  # system(command, ...)
 }
