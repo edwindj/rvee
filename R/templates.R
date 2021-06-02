@@ -35,13 +35,13 @@ fn {{pkg}}_{{name}}({{#input}}{{name}} C.SEXP{{/input}}) C.SEXP {
   {{#input}}
 
   // wrap input {{name}}
-  i_{{name}} := r.as_{{type}}({{name}})
+  i_{{name}}_v := r.as_{{type}}({{name}})
   {{/input}}
   {{#result}}
-  res := {{name}}({{#input}}i_{{name}}{{/input}})
+  o_res_v := {{name}}({{#input}}i_{{name}}_v{{/input}})
   //wrap output
-  o_res := r.from_{{result}}(res)
-  return o_res
+  res := r.from_{{result}}(o_res_v)
+  return res
   {{/result}}
   {{^result}}
   {{name}}({{#input}}i_{{name}}{{/input}})
@@ -56,7 +56,7 @@ fn {{pkg}}_{{name}}({{#input}}{{name}} C.SEXP{{/input}}) C.SEXP {
 RV_EXPORT_R <-
 "## Automatically generated with R package: `rvee`
 #
-#' %s
+#' {{>register}}
 NULL
 
 {{#fns}}
@@ -67,7 +67,10 @@ NULL
 #' @return {{result}}
 #' @keywords internal
 {{pkg}}_{{name}} <- function({{#input}}{{name}}{{/input}}){
-  .Call('_{{pkg}}_{{name}}' {{#input}},{{name}}{{/input}})
+  {{#input}}
+    {{name}} <- as.{{type}}({{name}})
+  {{/input}}
+  .Call('_{{pkg}}_{{name}}'{{#input}}, {{name}}{{/input}})
 }
 
 {{/fns}}

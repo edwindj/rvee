@@ -150,6 +150,7 @@ fn C.INTEGER_RO(x C.SEXP) voidptr
 fn C.REAL_RO(x C.SEXP) voidptr
 // const Rcomplex *(COMPLEX_RO)(SEXP x);
 // //SEXP (STRING_ELT)(SEXP x, R_xlen_t i);
+fn C.STRING_ELT(x C.SEXP, i C.R_xlen_t) C.SEXP
 // SEXP (VECTOR_ELT)(SEXP x, R_xlen_t i);
 fn C.VECTOR_ELT(x C.SEXP, i C.R_xlen_t) C.SEXP
 // void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
@@ -411,3 +412,32 @@ fn C.Rf_mkCharCE(x charptr, ce C.cetype_t) C.SEXP
 // SEXP Rf_mkCharLenCE(const char *, int, cetype_t);
 fn C.Rf_mkCharLenCE(x charptr, len int, ce C.cetype_t) C.SEXP
 // const char *Rf_reEnc(const char *x, cetype_t ce_in, cetype_t ce_out, int subst);
+
+
+
+// // ../main/character.c :
+// typedef enum {Bytes, Chars, Width} nchar_type;
+// int R_nchar(SEXP string, nchar_type type_,
+// 	    Rboolean allowNA, Rboolean keepNA, const char* msg_name);
+// Rboolean Rf_pmatch(SEXP, SEXP, Rboolean);
+// Rboolean Rf_psmatch(const char *, const char *, Rboolean);
+// SEXP R_ParseEvalString(const char *, SEXP);
+// void Rf_PrintValue(SEXP);
+// void Rf_printwhere(void);
+// void Rf_readS3VarsFromFrame(SEXP, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*);
+// SEXP Rf_setAttrib(SEXP, SEXP, SEXP);
+// void Rf_setSVector(SEXP*, int, SEXP);
+// void Rf_setVar(SEXP, SEXP, SEXP);
+// SEXP Rf_stringSuffix(SEXP, int);
+// SEXPTYPE Rf_str2type(const char *);
+// Rboolean Rf_StringBlank(SEXP);
+// SEXP Rf_substitute(SEXP,SEXP);
+// SEXP Rf_topenv(SEXP, SEXP);
+// const char * Rf_translateChar(SEXP);
+// const char * Rf_translateChar0(SEXP);
+// const char * Rf_translateCharUTF8(SEXP);
+fn C.Rf_translateCharUTF8(x C.SEXP) charptr
+// const char * Rf_type2char(SEXPTYPE);
+// SEXP Rf_type2rstr(SEXPTYPE);
+// SEXP Rf_type2str(SEXPTYPE);
+// SEXP Rf_type2str_nowarn(SEXPTYPE);
