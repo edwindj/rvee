@@ -10,6 +10,10 @@ pub fn as_int(x C.SEXP) int{
   return C.SCALAR_IVAL(x)
 }
 
+pub fn as_bool(x C.SEXP) bool{
+  return C.SCALAR_LVAL(x) != 0
+}
+
 // assumes that x is a numeric vector
 pub fn as_numeric_vector(x C.SEXP) NumericVector {
   return NumericVector{x}

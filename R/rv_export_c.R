@@ -11,17 +11,23 @@
 #'
 #' @export
 #' @param pkg `character` location of package.
-rv_export_c <- function(pkg="."){
-  desc <- read.dcf(file.path(pkgdir, "DESCRIPTION"))
-  pkg_name <- as.character(desc[,1]) # Title
+rv_export_c <- function(pkg=".", prefix=NULL){
+  desc <- read.dcf(file.path(pkg, "DESCRIPTION"))
+
+  if (is.character(prefix)){
+    prefix <- prefix[1]
+  } else {
+    prefix <- as.character(desc[,1]) # pkgname
+  }
 
   pkg_src <- file.path(pkg, "src")
   pkg_R <- file.path(pkg, "R")
 
   fns <- scan_v_dir(pkg_src)
-  generate_rv_export_v(fns, file.path(pkg_src, "rv_export.v"), pkg = pkg_name)
-  generate_init_c(fns, file.path(pkg_src, "init.c"), pkg = pkg_name)
-  generate_rv_export_R(fns, file.path(pkg_R, "rv_export.R"), pkg = pkg_name)
-  run_v_to_c(dir = file.path(pkg, "src"), pkg = pkg_name)
+  generate_rv_export_v(fns, file.path(pkg_src, "rv_export.v"), pkg = prefix)
+  generate_init_c(fns, file.path(pkg_src, "init.c"), pkg = prefix)
+  generate_rv_export_R(fns, file.path(pkg_R, "rv_export.R"), pkg = prefix)
+  run_v_to_c(dir = file.path(pkg, "src"), pkg = prefix)
+
   invisible(fns)
 }

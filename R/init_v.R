@@ -39,7 +39,7 @@ generate_rv_export_R <- function(fns, file=stdout(), pkg = "rvee"){
     fn
   })
   writeLines(
-    # needed because otherwise roxygen2 gets really confused...
+    # needed because otherwise roxygen2 really gets confused...
     whisker::whisker.render( sprintf(RV_EXPORT_R, "@useDynLib {{pkg}}, .registration=TRUE")
                            , list(fns=fns, pkg=pkg)
                            ),
@@ -49,11 +49,14 @@ generate_rv_export_R <- function(fns, file=stdout(), pkg = "rvee"){
 
 get_rtype <- function(x){
   switch( x
-        , "f64"    = "numeric"
-        , "string" = "character"
-        , "int"    = "integer"
-        , "bool"   = "logical"
-        , "void"   = "NULL"
+        , "f64"           = "numeric"
+        , "string"        = "character"
+        , "int"           = "integer"
+        , "bool"          = "logical"
+        , "void"          = "NULL"
+        , "NumericVector" = "numeric"
+        , "IntegerVector" = "integer"
+        , "LogicalVector" = "logical"
         , sprintf("unknown type: %s", x)
         )
 }

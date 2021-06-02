@@ -38,7 +38,6 @@ fn {{pkg}}_{{name}}({{#input}}{{name}} C.SEXP{{/input}}) C.SEXP {
   i_{{name}} := r.as_{{type}}({{name}})
   {{/input}}
   {{#result}}
-
   res := {{name}}({{#input}}i_{{name}}{{/input}})
   //wrap output
   o_res := r.from_{{result}}(res)
@@ -64,7 +63,6 @@ NULL
 #' {{pkg}}_{{name}}
 #'
 #' {{pkg}}_{{name}} calls the v function '{{name}}'.
-#'
 #' {{#input}}@param {{name}} {{type}}{{/input}}
 #' @return {{result}}
 #' @keywords internal
