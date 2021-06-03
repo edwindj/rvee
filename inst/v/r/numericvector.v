@@ -4,18 +4,10 @@ pub struct NumericVector {
 	sexp C.SEXP
 }
 
-fn new_numeric_vector(len int) &NumericVector {
-	unsafe{
-	mut sexp := C.Rf_allocVector(.realsxp, C.R_xlen_t(len))
-	sexp = C.Rf_protect(sexp)
-	return &NumericVector{sexp}
-	}
-}
-
-fn (x &NumericVector) free(){
-	unsafe{
-		C.Rf_unprotect(1)
-	}
+pub fn new_numeric_vector(len int) NumericVector {
+	sexp := C.Rf_allocVector(.realsxp, C.R_xlen_t(len))
+	nv := NumericVector{sexp}
+	return protect(nv)
 }
 
 // pub fn new_numeric_vector(len int) NumericVector{

@@ -41,10 +41,12 @@ fn {{pkg}}_{{name}}({{#input}}{{name}} C.SEXP{{/input}}) C.SEXP {
   o_res_v := {{name}}({{#input}}i_{{name}}_v{{/input}})
   //wrap output
   res := r.from_{{result}}(o_res_v)
+  r.protected.flush() // clear any protected r objects
   return res
   {{/result}}
   {{^result}}
   {{name}}({{#input}}i_{{name}}{{/input}})
+  r.protected.flush() // clear any protected r objects
   return r.null_value
   {{/result }}
 }
