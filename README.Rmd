@@ -1,0 +1,113 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# `rvee`
+
+## Recreational V programming for R / WIP
+
+<!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/rvee)](https://CRAN.R-project.org/package=rvee)
+<!-- badges: end -->
+
+**Work in progress, not ready for production**
+
+Create R extension packages with the [V programming language](https://vlang.io).
+V is a simple, safe and fast programming language with the speed of C.
+
+R has many good interfaces with programming languages C, fortran, cpp (Rcpp), python
+(reticulate), rust ().
+
+## Installation
+
+
+The **unstable** development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("edwindj/rvee")
+```
+
+## Overview
+
+There are the following possible routes for creating an R extension with `v` code:
+
+a) Transpiling `V` code to `C` code and use it as a normal C extension.
+b) Using the `v` compiler to build a shared library linked to the R shared library
+
+Both options have their benefits and draw backs:
+
+a) Allows for easy distribution and installation, but requires tweaking the compilation
+flags to pass CRAN checks etc. and removing/stripping code that is not needed by R.
+
+b) Allows for a optimized shared library, but required `v` to be installed by the
+installer (e.g. CRAN).
+
+## Status
+
+Currently the transpiling to C is in the make and kind-of works.
+
+Put your `v` files in the "<pkg>/src" directory and decorate each function to be
+exported with the `[rv_export]` attribute (see example below).
+
+After that 
+
+`rvee::rv_export_c` generates the necessary interfacing code:
+
+- "./R/rv_export.R": R functions interfacing the shared library
+- "./src/rv_export.v": v wrapper functions translating input and output
+- "./src/init.c": registration code for the shared library
+
+And `devtools::load_all` (or `R CMD SHLIB`) should work.
+
+Most work to be done is on the `v` module providing a easy interop between v and
+R.
+
+- `numeric` and `integer` vectors are working
+- working on `character` vectors
+
+
+## Example
+
+Suppose we have the following file "<pkg>/src/example.v"
+
+```{r, eval = FALSE, results="asis", code=readLines("example/example.v")}
+```
+
+With:
+
+```{r, eval=FALSE}
+rvee::rv_export_c("<pkg>") # <pkg> is root dir of the source of your package...
+```
+
+The interfacing code is generated:
+
+`"<pkg>/src/rv_export.v"`:
+
+```v
+```{r, echo=FALSE, results='asis'}
+fns <- rvee:::scan_v_file("example/example.v")
+rvee:::generate_rv_export_v(fns)
+```
+```
+
+and 
+
+`"<pkg>/R/rv_export.R"`:
+
+```r
+```{r, echo=FALSE, results='asis'}
+rvee:::generate_rv_export_R(fns)
+```
+```
