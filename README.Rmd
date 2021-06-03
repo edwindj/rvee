@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 [![CRAN status](https://www.r-pkg.org/badges/version/rvee)](https://CRAN.R-project.org/package=rvee)
 <!-- badges: end -->
 
-**Work in progress, not ready for production**
+**Very early work, expect errors and crashes! (not ready any use)**
 
 Create R extension packages with the [V programming language](https://vlang.io).
 V is a simple, safe and fast programming language with the speed of C.

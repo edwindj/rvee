@@ -11,7 +11,7 @@
 status](https://www.r-pkg.org/badges/version/rvee)](https://CRAN.R-project.org/package=rvee)
 <!-- badges: end -->
 
-**Work in progress, not ready for production**
+**Very early work, expect errors and crashes! (not ready any use)**
 
 Create R extension packages with the [V programming
 language](https://vlang.io). V is a simple, safe and fast programming
@@ -99,7 +99,7 @@ fn negate(x bool) bool {
 [rv_export]
 fn my_numeric(x NumericVector) NumericVector{
   //This changes the values in place!
-  mut values := x.as_f64s()
+  mut values := x.f64s()
   for mut val in values {
     val += 1.
   }
