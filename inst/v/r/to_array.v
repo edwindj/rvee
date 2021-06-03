@@ -1,4 +1,4 @@
-module r 
+module r
 
 //utility
 

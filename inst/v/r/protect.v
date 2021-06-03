@@ -4,9 +4,9 @@ interface RObject {
 	sexp C.SEXP
 }
 
-struct Protect {
+pub struct Protect {
 	// ch chan int
-	mut: 
+	mut:
 		count int
 }
 
@@ -16,7 +16,7 @@ fn (p Protect) add(o RObject) C.SEXP {
 	//HACK mutating a global const...
 	unsafe{
 		p.count += 1
-	} 
+	}
 	// this would be threadsafe...
 	// count := <-p.ch
 	// p.ch <-(count + 1)
@@ -27,13 +27,13 @@ pub fn (p Protect) flush(){
 	if p.count > 0 {
 		C.Rf_unprotect(p.count)
 	}
-	
+
 	unsafe{
 		p.count = 0
 	}
 }
 
-const protected = Protect{}
+pub const protected = Protect{}
 
 pub fn protect<T>(x T) T{
 	// obj := RObject(x)
