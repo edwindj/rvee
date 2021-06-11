@@ -17,6 +17,6 @@ pub fn new_integer_vector(len int) IntegerVector {
 
 fn test(){
 	a := [1]
-	
+	println(a)
 }
  

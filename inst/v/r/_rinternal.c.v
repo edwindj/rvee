@@ -75,7 +75,7 @@ struct C.SEXP {}
 // // ======================= not USE_RINTERNALS section
 // #define CHAR(x)		R_CHAR(x)
 // const char *(R_CHAR)(SEXP x);
-fn C.R_CHAR(x C.SEXP) &char
+fn C.R_CHAR(x C.SEXP) charptr
 
 // /* Various tests with macro versions in the second USE_RINTERNALS section */
 // Rboolean (Rf_isNull)(SEXP s);

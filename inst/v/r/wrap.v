@@ -14,6 +14,17 @@ pub fn as_bool(x C.SEXP) bool{
   return C.SCALAR_LVAL(x) != 0
 }
 
+pub fn as_string(x C.SEXP) string {
+  unsafe {
+    ch := C.STRING_PTR_RO(x)
+    // this is not UTF8 safe, to be improved
+    // copies the string!
+    ch2 := C.R_CHAR(ch[0])
+    // copies the string!
+    return cstring_to_vstring(ch2)
+  }
+}
+
 // assumes that x is a numeric vector
 [manualfree]
 pub fn as_numeric_vector(x C.SEXP) NumericVector {
@@ -24,6 +35,11 @@ pub fn as_numeric_vector(x C.SEXP) NumericVector {
 pub fn as_integer_vector(x C.SEXP) IntegerVector {
   return IntegerVector{x}
 }
+
+
+/*    
+
+*/
 
 pub fn from_f64(x f64) C.SEXP {
   return C.Rf_ScalarReal(x)
@@ -37,12 +53,21 @@ pub fn from_bool(x bool) C.SEXP {
    return C.Rf_ScalarLogical(int(x))
 }
 
+pub fn from_string(x string) C.SEXP {
+  // this is not UTF8 safe on Windows...
+  return C.Rf_mkString(x.str)
+}
+
 pub fn from_numeric_vector(x NumericVector) C.SEXP {
   return x.to_sexp()
 }
 
 pub fn from_integer_vector(x IntegerVector) C.SEXP {
   return x.sexp
+}
+
+pub fn from_character_vector(x CharacterVector) C.SEXP {
+  return x.to_sexp()
 }
 
 pub fn from_void() C.SEXP {

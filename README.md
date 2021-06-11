@@ -60,9 +60,10 @@ After that
 
 `rvee::rv_export_c` generates the necessary interfacing code:
 
--   “./R/rv\_export.R”: R functions interfacing the shared library
+-   “./R/rv\_export.R”: R functions calling the v functions declared in
+    “./src/rv\_export.v”
 -   “./src/rv\_export.v”: v wrapper functions translating input and
-    output
+    output to the original v functions.
 -   “./src/init.c”: registration code for the shared library
 
 And `devtools::load_all` (or `R CMD SHLIB`) should work.
@@ -109,7 +110,7 @@ fn my_numeric(mut x NumericVector) NumericVector{
 With:
 
 ``` r
-rvee::rv_export_c("<pkg>") # <pkg> is root dir of the source of your package...
+rvee::rv_export_c("<pkg>", prefix="my_pkg") # <pkg> is root dir of the source of your package...
 ```
 
 The interfacing code is generated:
@@ -122,7 +123,7 @@ The interfacing code is generated:
 */
 import r
 
-fn rvee_scalar_numeric(x C.SEXP) C.SEXP {
+fn my_pkg_scalar_numeric(x C.SEXP) C.SEXP {
 
   // wrap input x
   i_x_v := r.as_f64(x)
@@ -134,7 +135,7 @@ fn rvee_scalar_numeric(x C.SEXP) C.SEXP {
 
 }
 
-fn rvee_scalar_integer(x C.SEXP) C.SEXP {
+fn my_pkg_scalar_integer(x C.SEXP) C.SEXP {
 
   // wrap input x
   i_x_v := r.as_int(x)
@@ -146,7 +147,7 @@ fn rvee_scalar_integer(x C.SEXP) C.SEXP {
 
 }
 
-fn rvee_negate(x C.SEXP) C.SEXP {
+fn my_pkg_negate(x C.SEXP) C.SEXP {
 
   // wrap input x
   i_x_v := r.as_bool(x)
@@ -158,7 +159,7 @@ fn rvee_negate(x C.SEXP) C.SEXP {
 
 }
 
-fn rvee_my_numeric(x C.SEXP) C.SEXP {
+fn my_pkg_my_numeric(x C.SEXP) C.SEXP {
 
   // wrap input x
   mut i_x_v := r.as_numeric_vector(x)
@@ -178,50 +179,56 @@ and
 ``` r
 ## Automatically generated with R package: `rvee`
 #
-#' @useDynLib rvee, .registration=TRUE
+#' @useDynLib my_pkg, .registration=TRUE
 NULL
 
-#' rvee_scalar_numeric
+#' my_pkg_scalar_numeric
 #'
-#' rvee_scalar_numeric calls the v function 'scalar_numeric'.
+#' my_pkg_scalar_numeric calls the v function 'scalar_numeric'.
 #' @param x numeric
 #' @return numeric
 #' @keywords internal
-rvee_scalar_numeric <- function(x){
+my_pkg_scalar_numeric <- function(x){
     x <- as.numeric(x)
-  .Call('_rvee_scalar_numeric', x)
+  .Call('_my_pkg_scalar_numeric', x)
 }
 
-#' rvee_scalar_integer
+#' my_pkg_scalar_integer
 #'
-#' rvee_scalar_integer calls the v function 'scalar_integer'.
+#' my_pkg_scalar_integer calls the v function 'scalar_integer'.
 #' @param x integer
 #' @return integer
 #' @keywords internal
-rvee_scalar_integer <- function(x){
+my_pkg_scalar_integer <- function(x){
     x <- as.integer(x)
-  .Call('_rvee_scalar_integer', x)
+  .Call('_my_pkg_scalar_integer', x)
 }
 
-#' rvee_negate
+#' my_pkg_negate
 #'
-#' rvee_negate calls the v function 'negate'.
+#' my_pkg_negate calls the v function 'negate'.
 #' @param x logical
 #' @return logical
 #' @keywords internal
-rvee_negate <- function(x){
+my_pkg_negate <- function(x){
     x <- as.logical(x)
-  .Call('_rvee_negate', x)
+  .Call('_my_pkg_negate', x)
 }
 
-#' rvee_my_numeric
+#' my_pkg_my_numeric
 #'
-#' rvee_my_numeric calls the v function 'my_numeric'.
+#' my_pkg_my_numeric calls the v function 'my_numeric'.
 #' @param x numeric
 #' @return numeric
 #' @keywords internal
-rvee_my_numeric <- function(x){
+my_pkg_my_numeric <- function(x){
     x <- as.numeric(x)
-  .Call('_rvee_my_numeric', x)
+  .Call('_my_pkg_my_numeric', x)
 }
+```
+
+And create the shared library with a call to devtools
+
+``` r
+devtools::load_all("<pkg>")
 ```

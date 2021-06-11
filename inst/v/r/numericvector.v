@@ -1,14 +1,15 @@
 module r
 
 pub struct NumericVector {
-	sexp C.SEXP
+  sexp C.SEXP
 pub mut:
   data []f64
 }
 
+[manualfree]
 pub fn new_numeric_vector(len int) NumericVector {
 	sexp := C.Rf_allocVector(.realsxp, C.R_xlen_t(len))
-	data := unsafe {as_f64s(C.REAL(sexp), len)}
+	data := unsafe {as_f64array(sexp)}
 	nv := NumericVector{sexp, data}
 	return protect(nv)
 }
@@ -41,3 +42,20 @@ fn (v NumericVector) to_sexp() C.SEXP {
 	}
 	return v.sexp
 }
+
+[unsafe]
+fn as_f64array(sexp C.SEXP) []f64 {
+	data := C.REAL(sexp)
+	len := C.LENGTH(sexp)
+
+	res := unsafe {
+		array{
+			element_size: 8
+			data: data
+			len: len
+			cap: len
+		}
+	}
+	return res
+}
+

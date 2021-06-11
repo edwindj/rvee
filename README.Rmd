@@ -65,8 +65,8 @@ After that
 
 `rvee::rv_export_c` generates the necessary interfacing code:
 
-- "./R/rv_export.R": R functions interfacing the shared library
-- "./src/rv_export.v": v wrapper functions translating input and output
+- "./R/rv_export.R": R functions calling the v functions declared in "./src/rv_export.v"
+- "./src/rv_export.v": v wrapper functions translating input and output to the original v functions.
 - "./src/init.c": registration code for the shared library
 
 And `devtools::load_all` (or `R CMD SHLIB`) should work.
@@ -88,7 +88,7 @@ Suppose we have the following file "<pkg>/src/example.v"
 With:
 
 ```{r, eval=FALSE}
-rvee::rv_export_c("<pkg>") # <pkg> is root dir of the source of your package...
+rvee::rv_export_c("<pkg>", prefix="my_pkg") # <pkg> is root dir of the source of your package...
 ```
  
 The interfacing code is generated:
@@ -98,7 +98,8 @@ The interfacing code is generated:
 ```v
 ```{r, echo=FALSE, results='asis'}
 fns <- rvee:::scan_v_file("example/example.v")
-rvee:::generate_rv_export_v(fns)
+pkg <- "my_pkg"
+rvee:::generate_rv_export_v(fns,pkg=pkg)
 ```
 ```
 
@@ -108,6 +109,12 @@ and
 
 ```r
 ```{r, echo=FALSE, results='asis'}
-rvee:::generate_rv_export_R(fns)
+rvee:::generate_rv_export_R(fns, pkg = pkg)
 ```
+```
+
+And create the shared library with a call to devtools
+
+```{r, eval = FALSE}
+devtools::load_all("<pkg>")
 ```
