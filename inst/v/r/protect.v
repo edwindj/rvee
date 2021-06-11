@@ -38,6 +38,6 @@ pub const protected = Protect{}
 pub fn protect<T>(x T) T{
 	// obj := RObject(x)
 	sexp := r.protected.add(x)
-	return T{sexp: sexp}
+	return T{sexp}
 }
 

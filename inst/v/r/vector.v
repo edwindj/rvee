@@ -14,4 +14,9 @@ pub fn new_integer_vector(len int) IntegerVector {
 	return protect(IntegerVector{sexp})
 }
 
+
+fn test(){
+	a := [1]
+	
+}
  

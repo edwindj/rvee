@@ -35,10 +35,10 @@ fn {{pkg}}_{{name}}({{#input}}{{name}} C.SEXP{{/input}}) C.SEXP {
   {{#input}}
 
   // wrap input {{name}}
-  i_{{name}}_v := r.as_{{type}}({{name}})
+  {{#mut}}mut {{/mut}}i_{{name}}_v := r.as_{{type}}({{name}})
   {{/input}}
   {{#result}}
-  o_res_v := {{name}}({{#input}}i_{{name}}_v{{/input}})
+  o_res_v := {{name}}({{#input}}{{#mut}}mut {{/mut}}i_{{name}}_v{{/input}})
   //wrap output
   res := r.from_{{result}}(o_res_v)
   r.protected.flush() // clear any protected r objects

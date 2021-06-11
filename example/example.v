@@ -17,11 +17,10 @@ fn negate(x bool) bool {
 }
 
 [rv_export]
-fn my_numeric(x NumericVector) NumericVector{
+fn my_numeric(mut x NumericVector) NumericVector{
   //This changes the values in place!
-  mut values := x.f64s()
-  for mut val in values {
-    val += 1.
+  for i, val in x.data {
+    x.data[i] = val + 1.
   }
   return x
 }

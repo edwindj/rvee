@@ -97,11 +97,10 @@ fn negate(x bool) bool {
 }
 
 [rv_export]
-fn my_numeric(x NumericVector) NumericVector{
+fn my_numeric(mut x NumericVector) NumericVector{
   //This changes the values in place!
-  mut values := x.f64s()
-  for mut val in values {
-    val += 1.
+  for i, val in x.data {
+    x.data[i] = val + 1.
   }
   return x
 }
@@ -162,8 +161,8 @@ fn rvee_negate(x C.SEXP) C.SEXP {
 fn rvee_my_numeric(x C.SEXP) C.SEXP {
 
   // wrap input x
-  i_x_v := r.as_numeric_vector(x)
-  o_res_v := my_numeric(i_x_v)
+  mut i_x_v := r.as_numeric_vector(x)
+  o_res_v := my_numeric(mut i_x_v)
   //wrap output
   res := r.from_numeric_vector(o_res_v)
   r.protected.flush() // clear any protected r objects

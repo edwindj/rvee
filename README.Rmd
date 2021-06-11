@@ -90,7 +90,7 @@ With:
 ```{r, eval=FALSE}
 rvee::rv_export_c("<pkg>") # <pkg> is root dir of the source of your package...
 ```
-
+ 
 The interfacing code is generated:
 
 `"<pkg>/src/rv_export.v"`:

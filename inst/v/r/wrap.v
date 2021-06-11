@@ -15,8 +15,10 @@ pub fn as_bool(x C.SEXP) bool{
 }
 
 // assumes that x is a numeric vector
+[manualfree]
 pub fn as_numeric_vector(x C.SEXP) NumericVector {
-  return NumericVector{x}
+  data := unsafe{as_f64s(C.REAL(x), C.LENGTH(x))}
+  return NumericVector{x, data}
 }
 
 pub fn as_integer_vector(x C.SEXP) IntegerVector {
@@ -36,7 +38,7 @@ pub fn from_bool(x bool) C.SEXP {
 }
 
 pub fn from_numeric_vector(x NumericVector) C.SEXP {
-  return x.sexp
+  return x.to_sexp()
 }
 
 pub fn from_integer_vector(x IntegerVector) C.SEXP {
