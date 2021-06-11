@@ -79,7 +79,7 @@ between v and R.
 Suppose we have the following file “<pkg>/src/example.v”
 
 ``` r
-import r {NumericVector}
+import r {Numeric}
 
 [rv_export]
 pub fn scalar_numeric(x f64) f64{
@@ -98,7 +98,7 @@ fn negate(x bool) bool {
 }
 
 [rv_export]
-fn my_numeric(mut x NumericVector) NumericVector{
+fn my_numeric(mut x Numeric) Numeric{
   //This changes the values in place!
   for i, val in x.data {
     x.data[i] = val + 1.
@@ -162,10 +162,10 @@ fn my_pkg_negate(x C.SEXP) C.SEXP {
 fn my_pkg_my_numeric(x C.SEXP) C.SEXP {
 
   // wrap input x
-  mut i_x_v := r.as_numeric_vector(x)
+  mut i_x_v := r.as_numeric(x)
   o_res_v := my_numeric(mut i_x_v)
   //wrap output
-  res := r.from_numeric_vector(o_res_v)
+  res := r.from_numeric(o_res_v)
   r.protected.flush() // clear any protected r objects
   return res
 

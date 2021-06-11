@@ -112,7 +112,7 @@ and
 rvee:::generate_rv_export_R(fns, pkg = pkg)
 ```
 ```
-
+ 
 And create the shared library with a call to devtools
 
 ```{r, eval = FALSE}

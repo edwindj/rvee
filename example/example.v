@@ -1,4 +1,4 @@
-import r {NumericVector}
+import r {Numeric}
 
 [rv_export]
 pub fn scalar_numeric(x f64) f64{
@@ -17,7 +17,7 @@ fn negate(x bool) bool {
 }
 
 [rv_export]
-fn my_numeric(mut x NumericVector) NumericVector{
+fn my_numeric(mut x Numeric) Numeric{
   //This changes the values in place!
   for i, val in x.data {
     x.data[i] = val + 1.
