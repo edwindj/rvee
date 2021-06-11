@@ -17,8 +17,13 @@ scan_v_dir <- function(path){
 scan_v_file <- function(vfile){
   code <- readLines(vfile)
   rv <- grep("\\[rv_export\\s*\\]", code) + 1
-  fns <- code[rv]
-  scan_v_fn(fns)
+  v_fns <- code[rv]
+  fns <- scan_v_fn(v_fns)
+  for (i in seq_len(length(fns))){
+    fns[[i]]$line <- rv[i]
+    fns[[i]]$file <- vfile
+  }
+  fns
 }
 
 scan_v_fn <- function(fns){

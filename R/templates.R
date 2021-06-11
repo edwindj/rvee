@@ -32,21 +32,20 @@ import r
 
 {{#fns}}
 fn {{pkg}}_{{name}}({{#input}}{{name}} C.SEXP{{/input}}) C.SEXP {
-  {{#input}}
+  defer {r.protected.flush()} // clear any protected r objects
 
+  {{#input}}
   // wrap input {{name}}
   {{#mut}}mut {{/mut}}i_{{name}}_v := r.as_{{type}}({{name}})
   {{/input}}
   {{#result}}
   o_res_v := {{name}}({{#input}}{{#mut}}mut {{/mut}}i_{{name}}_v{{/input}})
+
   //wrap output
-  res := r.from_{{result}}(o_res_v)
-  r.protected.flush() // clear any protected r objects
-  return res
+  return r.from_{{result}}(o_res_v)
   {{/result}}
   {{^result}}
-  {{name}}({{#input}}i_{{name}}{{/input}})
-  r.protected.flush() // clear any protected r objects
+  {{name}}({{#input}}{{#mut}}mut {{/mut}}i_{{name}}{{/input}})
   return r.null_value
   {{/result }}
 }
@@ -64,13 +63,14 @@ NULL
 {{#fns}}
 #' {{pkg}}_{{name}}
 #'
-#' {{pkg}}_{{name}} calls the v function '{{name}}'.
+#' {{pkg}}_{{name}} calls the v function '{{name}}'
+#' ('{{file}}:{{line}}').
 #' {{#input}}@param {{name}} {{type}}{{/input}}
 #' @return {{result}}
 #' @keywords internal
 {{pkg}}_{{name}} <- function({{#input}}{{name}}{{/input}}){
   {{#input}}
-    {{name}} <- as.{{type}}({{name}})
+  {{name}} <- as.{{type}}({{name}})
   {{/input}}
   .Call('_{{pkg}}_{{name}}'{{#input}}, {{name}}{{/input}})
 }
