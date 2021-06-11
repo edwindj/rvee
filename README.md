@@ -124,50 +124,50 @@ The interfacing code is generated:
 import r
 
 fn my_pkg_scalar_numeric(x C.SEXP) C.SEXP {
+  defer {r.protected.flush()} // clear any protected r objects
 
   // wrap input x
   i_x_v := r.as_f64(x)
   o_res_v := scalar_numeric(i_x_v)
+
   //wrap output
-  res := r.from_f64(o_res_v)
-  r.protected.flush() // clear any protected r objects
-  return res
+  return r.from_f64(o_res_v)
 
 }
 
 fn my_pkg_scalar_integer(x C.SEXP) C.SEXP {
+  defer {r.protected.flush()} // clear any protected r objects
 
   // wrap input x
   i_x_v := r.as_int(x)
   o_res_v := scalar_integer(i_x_v)
+
   //wrap output
-  res := r.from_int(o_res_v)
-  r.protected.flush() // clear any protected r objects
-  return res
+  return r.from_int(o_res_v)
 
 }
 
 fn my_pkg_negate(x C.SEXP) C.SEXP {
+  defer {r.protected.flush()} // clear any protected r objects
 
   // wrap input x
   i_x_v := r.as_bool(x)
   o_res_v := negate(i_x_v)
+
   //wrap output
-  res := r.from_bool(o_res_v)
-  r.protected.flush() // clear any protected r objects
-  return res
+  return r.from_bool(o_res_v)
 
 }
 
 fn my_pkg_my_numeric(x C.SEXP) C.SEXP {
+  defer {r.protected.flush()} // clear any protected r objects
 
   // wrap input x
   mut i_x_v := r.as_numeric(x)
   o_res_v := my_numeric(mut i_x_v)
+
   //wrap output
-  res := r.from_numeric(o_res_v)
-  r.protected.flush() // clear any protected r objects
-  return res
+  return r.from_numeric(o_res_v)
 
 }
 ```
@@ -184,45 +184,49 @@ NULL
 
 #' my_pkg_scalar_numeric
 #'
-#' my_pkg_scalar_numeric calls the v function 'scalar_numeric'.
+#' my_pkg_scalar_numeric calls the v function 'scalar_numeric'
+#' ('example/example.v:4').
 #' @param x numeric
 #' @return numeric
 #' @keywords internal
 my_pkg_scalar_numeric <- function(x){
-    x <- as.numeric(x)
+  x <- as.numeric(x)
   .Call('_my_pkg_scalar_numeric', x)
 }
 
 #' my_pkg_scalar_integer
 #'
-#' my_pkg_scalar_integer calls the v function 'scalar_integer'.
+#' my_pkg_scalar_integer calls the v function 'scalar_integer'
+#' ('example/example.v:9').
 #' @param x integer
 #' @return integer
 #' @keywords internal
 my_pkg_scalar_integer <- function(x){
-    x <- as.integer(x)
+  x <- as.integer(x)
   .Call('_my_pkg_scalar_integer', x)
 }
 
 #' my_pkg_negate
 #'
-#' my_pkg_negate calls the v function 'negate'.
+#' my_pkg_negate calls the v function 'negate'
+#' ('example/example.v:15').
 #' @param x logical
 #' @return logical
 #' @keywords internal
 my_pkg_negate <- function(x){
-    x <- as.logical(x)
+  x <- as.logical(x)
   .Call('_my_pkg_negate', x)
 }
 
 #' my_pkg_my_numeric
 #'
-#' my_pkg_my_numeric calls the v function 'my_numeric'.
+#' my_pkg_my_numeric calls the v function 'my_numeric'
+#' ('example/example.v:20').
 #' @param x numeric
 #' @return numeric
 #' @keywords internal
 my_pkg_my_numeric <- function(x){
-    x <- as.numeric(x)
+  x <- as.numeric(x)
   .Call('_my_pkg_my_numeric', x)
 }
 ```
