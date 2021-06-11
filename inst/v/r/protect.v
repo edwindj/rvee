@@ -1,9 +1,5 @@
 module r
 
-interface RObject {
-	sexp C.SEXP
-}
-
 pub struct Protect {
 	// ch chan int
 	mut:

@@ -2,33 +2,35 @@ module r
 
 //https://github.com/hadley/r-internals/blob/master/strings.md
 
-pub struct CharacterVector {
+pub struct Character {
 	sexp C.SEXP
-pub mut:
-	data []charptr
 }
 
-fn (mut v CharacterVector) to_sexp() C.SEXP{
+fn (v Character) to_sexp() C.SEXP{
 	return v.sexp
 }
 
-fn (v CharacterVector) get_strings() []string {
+pub fn (v Character) get_strings() []string {
+	
 	// this can be made much more efficient
 	unsafe {
-		len := v.data.len
-		mut s := []string{len:len, cap: len}
-		for i, c in v.data {
+		len := C.LENGTH(v.sexp)
+		mut ss := []string{len:len, cap: len}
+		ptr := C.STRING_PTR_RO(v.sexp)
+		for i, mut s in ss {
 			//avoid copying by using literal...
-			s[i] = c.vstring_literal()
+			c := C.R_CHAR(ptr[i])
+			s = c.vstring_literal()
 		}
-		return s
+		return ss
 	}
 }
 
-fn (mut v CharacterVector) set_strings(ss []string){
+pub fn (mut v Character) set_strings(ss []string){
 	C.SETLENGTH(v.sexp, C.R_xlen_t(ss.len))
 	unsafe{
-		ptr := C.STRING_PTR(v.sexp)
+		// we could use STRING_PTR here, but need to take care of dangling R string pointers. 
+		// may be first 
 		for i, s in ss {
 			// should be mkCharCE
 			C.SET_STRING_ELT(v.sexp, C.R_xlen_t(i), C.Rf_mkChar(s.str))

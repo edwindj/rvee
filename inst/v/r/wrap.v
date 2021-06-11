@@ -18,7 +18,6 @@ pub fn as_string(x C.SEXP) string {
   unsafe {
     ch := C.STRING_PTR_RO(x)
     // this is not UTF8 safe, to be improved
-    // copies the string!
     ch2 := C.R_CHAR(ch[0])
     // copies the string!
     return cstring_to_vstring(ch2)
@@ -27,13 +26,19 @@ pub fn as_string(x C.SEXP) string {
 
 // assumes that x is a numeric vector
 [manualfree]
-pub fn as_numeric_vector(x C.SEXP) NumericVector {
+pub fn as_numeric(x C.SEXP) Numeric {
   data := unsafe{as_f64s(C.REAL(x), C.LENGTH(x))}
-  return NumericVector{x, data}
+  return Numeric{x, data}
 }
 
-pub fn as_integer_vector(x C.SEXP) IntegerVector {
-  return IntegerVector{x}
+[manualfree]
+pub fn as_integer(x C.SEXP) Integer {
+  data := unsafe{as_ints(C.INTEGER(x), C.LENGTH(x))}
+  return Integer{x, data}
+}
+
+pub fn as_character(x C.SEXP) Character {
+  return Character{sexp: x}
 }
 
 
@@ -58,19 +63,18 @@ pub fn from_string(x string) C.SEXP {
   return C.Rf_mkString(x.str)
 }
 
-pub fn from_numeric_vector(x NumericVector) C.SEXP {
+pub fn from_numeric(x Numeric) C.SEXP {
   return x.to_sexp()
 }
 
-pub fn from_integer_vector(x IntegerVector) C.SEXP {
-  return x.sexp
+pub fn from_integer(x Integer) C.SEXP {
+  return x.to_sexp()
 }
 
-pub fn from_character_vector(x CharacterVector) C.SEXP {
+pub fn from_character(x Character) C.SEXP {
   return x.to_sexp()
 }
 
 pub fn from_void() C.SEXP {
   return null_value
 }
-

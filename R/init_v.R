@@ -57,10 +57,10 @@ get_rtype <- function(x){
         , "int"           = "integer"
         , "bool"          = "logical"
         , "void"          = "NULL"
-        , "NumericVector" = "numeric"
-        , "IntegerVector" = "integer"
-        , "LogicalVector" = "logical"
-        , "CharacterVector" = "character"
+        , "Numeric"       = "numeric"
+        , "Integer"       = "integer"
+        , "Logical"       = "logical"
+        , "Character"     = "character"
         , sprintf("unknown type: %s", x)
         )
 }

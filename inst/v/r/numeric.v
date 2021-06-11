@@ -1,41 +1,49 @@
 module r
 
-pub struct NumericVector {
+pub struct Numeric {
   sexp C.SEXP
 pub mut:
   data []f64
 }
 
 [manualfree]
-pub fn new_numeric_vector(len int) NumericVector {
+pub fn new_numeric(len int) Numeric {
 	sexp := C.Rf_allocVector(.realsxp, C.R_xlen_t(len))
 	data := unsafe {as_f64array(sexp)}
-	nv := NumericVector{sexp, data}
+	nv := Numeric{sexp, data}
 	return protect(nv)
 }
 
-// pub fn new_numeric_vector(len int) NumericVector{
+// pub fn new_numeric_vector(len int) Nume{
 // 	unsafe {
 // 	mut sexp := C.Rf_allocVector(.realsxp, xlen(len))
-// 	sexp = C.Rf_protect(sexp)
-// 	return NumericVector{sexp, true}
+// 	sexp = C.Rf_p(sexp)
+// 	return Numeric{sexp, true}
 // 	}
 // }
+pub fn (v Numeric) copy() Numeric {
+	len := v.data.len
+	sexp := C.Rf_allocVector(.realsxp, C.R_xlen_t(len))
+	
+	// nasty trick, reuse the data
+	nv := Numeric{sexp, v.data}
+	nv.to_sexp() //copies the data
+    return protect(nv)
+}
 
-pub fn (v NumericVector) length() int {
+pub fn (v Numeric) length() int {
 	return C.LENGTH(v.sexp)
 }
 
-fn (v NumericVector) to_sexp() C.SEXP {
+fn (v Numeric) to_sexp() C.SEXP {
 	x := v.sexp
 	mut ptr := C.REAL(x)
-
-	if ptr != v.data.data {
+    if ptr != v.data.data {
 		// copy the new data!
 		C.SETLENGTH(x, C.R_xlen_t(v.data.len))
-		// R reallocation?
+		// R ?
 		ptr = C.REAL(x)
-		unsafe{
+		unsafe {
 			C.memcpy(v.data.data, ptr, v.data.len * v.data.element_size)
 			v.data = as_f64s(ptr, v.data.len)
 		}
@@ -58,4 +66,3 @@ fn as_f64array(sexp C.SEXP) []f64 {
 	}
 	return res
 }
-
