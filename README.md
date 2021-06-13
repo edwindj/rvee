@@ -11,14 +11,43 @@
 status](https://www.r-pkg.org/badges/version/rvee)](https://CRAN.R-project.org/package=rvee)
 <!-- badges: end -->
 
-**Very early work, expect errors and crashes! (not ready any use)**
+**Early work, expect errors and crashes! (not ready for production)**
 
 Create R extension packages with the [V programming
 language](https://vlang.io). V is a simple, safe and fast programming
 language with the speed of C.
 
 R has many good interfaces with programming languages C, fortran, cpp
-(Rcpp), python (reticulate), rust ().
+(Rcpp), python (reticulate), rust (), `rvee` provides this for the `v`
+programming language.
+
+## Status
+
+Translation to `C` and compilation:
+
+Interfacing:
+
+-   [x] Generating all interfacing code from `v` file with
+    `rvee::rv_export_c()`
+-   [x] wraps simple input and return types: `f64`, `int`, `string`
+-   [x] wraps `numeric`, `integer` and `character` input and return
+    types.
+-   [x] compiling and working :-)
+-   [ ] CRAN checks (remove c compiler warnings)
+
+r module (in v):
+
+-   [x] `Numeric`, direct access as a `[]f64`
+-   [x] `Integer`, direct access as a `[]int`
+-   [x] `Character`, indirect access as a `[]string`. string values of R
+    are reused, but newly created string (not managed by R) are copied.
+-   [x] `Logical`, indirect access as a `[]bool`. automatically converts
+    between `[]bool` and `logical`.
+-   [ ] `Factor`
+-   [ ] `List`
+-   [ ] `DataFrame`
+-   [ ] `Environment`
+-   [ ] `Function`
 
 ## Installation
 

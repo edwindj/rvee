@@ -1,7 +1,6 @@
 module r
 
 // conversion between types
-
 pub fn as_f64(x C.SEXP) f64{
   return C.SCALAR_DVAL(x)
 }
@@ -40,11 +39,6 @@ pub fn as_integer(x C.SEXP) Integer {
 pub fn as_character(x C.SEXP) Character {
   return Character{sexp: x}
 }
-
-
-/*    
-
-*/
 
 pub fn from_f64(x f64) C.SEXP {
   return C.Rf_ScalarReal(x)
