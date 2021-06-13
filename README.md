@@ -23,15 +23,19 @@ programming language.
 
 ## Status
 
-Translation to `C` and compilation:
+Translation to `C` and compilation (works…)
 
 Interfacing:
 
 -   [x] Generating all interfacing code from `v` file with
     `rvee::rv_export_c()`
--   [x] wraps simple input and return types: `f64`, `int`, `string`
--   [x] wraps `numeric`, `integer` and `character` input and return
-    types.
+-   [x] wraps simple input and return types: `f64`, `int`, `bool`,
+    `string`
+-   [ ] wraps array input and return types: `[]f64`, `[]int`, `[]bool`,
+    `[]string`
+-   [x] wraps `numeric`, `logical`, `integer` and `character` input and
+    return types.
+-   [ ] wraps `factor`, `list`, `data.frame` input and return types.
 -   [x] compiling and working :-)
 -   [ ] CRAN checks (remove c compiler warnings)
 
@@ -77,7 +81,7 @@ Both options have their benefits and draw backs:
 2.  Allows for a optimized shared library, but required `v` to be
     installed by the installer (e.g. CRAN).
 
-## Status
+## Example
 
 Currently the transpiling to C is in the make and kind-of works.
 
@@ -102,8 +106,6 @@ between v and R.
 
 -   `numeric` and `integer` vectors are working
 -   working on `character` vectors
-
-## Example
 
 Suppose we have the following file “<pkg>/src/example.v”
 
