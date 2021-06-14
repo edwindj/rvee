@@ -6,6 +6,11 @@ pub struct Character {
 	sexp C.SEXP
 }
 
+pub fn character(len int) &Character{
+	sexp := C.Rf_allocVector(.strsxp, C.R_xlen_t(len))
+	return &Character{sexp: sexp}
+}
+
 fn (v Character) to_sexp() C.SEXP{
 	return v.sexp
 }

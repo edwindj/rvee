@@ -31,6 +31,7 @@ RV_EXPORT_V <-
 import r
 
 {{#fns}}
+[manualfree]
 fn {{pkg}}_{{name}}({{#input}}{{name}} C.SEXP{{/input}}) C.SEXP {
   defer {r.protected.flush()} // clear any protected r objects
 
@@ -39,13 +40,13 @@ fn {{pkg}}_{{name}}({{#input}}{{name}} C.SEXP{{/input}}) C.SEXP {
   {{#mut}}mut {{/mut}}i_{{name}}_v := r.as_{{type}}({{name}})
   {{/input}}
   {{#result}}
-  o_res_v := {{name}}({{#input}}{{#mut}}mut {{/mut}}i_{{name}}_v{{/input}})
+  res := {{name}}({{#input}}{{#mut}}mut {{/mut}}i_{{name}}_v{{/input}})
 
   //wrap output
-  return r.from_{{result}}(o_res_v)
+  return r.from_{{result}}(res)
   {{/result}}
   {{^result}}
-  {{name}}({{#input}}{{#mut}}mut {{/mut}}i_{{name}}{{/input}})
+  {{name}}({{#input}}{{#mut}}mut {{/mut}}i_{{name}}_v{{/input}})
   return r.null_value
   {{/result }}
 }

@@ -9,6 +9,7 @@
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/rvee)](https://CRAN.R-project.org/package=rvee)
+[![R-CMD-check](https://github.com/edwindj/rvee/workflows/R-CMD-check/badge.svg)](https://github.com/edwindj/rvee/actions)
 <!-- badges: end -->
 
 **Early work, expect errors and crashes! (not ready for production)**
@@ -93,9 +94,9 @@ After that
 
 `rvee::rv_export_c` generates the necessary interfacing code:
 
--   “./R/rv\_export.R”: R functions calling the v functions declared in
-    “./src/rv\_export.v”
--   “./src/rv\_export.v”: v wrapper functions translating input and
+-   “./R/rv_export.R”: R functions calling the v functions declared in
+    “./src/rv_export.v”
+-   “./src/rv_export.v”: v wrapper functions translating input and
     output to the original v functions.
 -   “./src/init.c”: registration code for the shared library
 
@@ -154,51 +155,55 @@ The interfacing code is generated:
 */
 import r
 
+[manualfree]
 fn my_pkg_scalar_numeric(x C.SEXP) C.SEXP {
   defer {r.protected.flush()} // clear any protected r objects
 
   // wrap input x
   i_x_v := r.as_f64(x)
-  o_res_v := scalar_numeric(i_x_v)
+  res := scalar_numeric(i_x_v)
 
   //wrap output
-  return r.from_f64(o_res_v)
+  return r.from_f64(res)
 
 }
 
+[manualfree]
 fn my_pkg_scalar_integer(x C.SEXP) C.SEXP {
   defer {r.protected.flush()} // clear any protected r objects
 
   // wrap input x
   i_x_v := r.as_int(x)
-  o_res_v := scalar_integer(i_x_v)
+  res := scalar_integer(i_x_v)
 
   //wrap output
-  return r.from_int(o_res_v)
+  return r.from_int(res)
 
 }
 
+[manualfree]
 fn my_pkg_negate(x C.SEXP) C.SEXP {
   defer {r.protected.flush()} // clear any protected r objects
 
   // wrap input x
   i_x_v := r.as_bool(x)
-  o_res_v := negate(i_x_v)
+  res := negate(i_x_v)
 
   //wrap output
-  return r.from_bool(o_res_v)
+  return r.from_bool(res)
 
 }
 
+[manualfree]
 fn my_pkg_my_numeric(x C.SEXP) C.SEXP {
   defer {r.protected.flush()} // clear any protected r objects
 
   // wrap input x
   mut i_x_v := r.as_numeric(x)
-  o_res_v := my_numeric(mut i_x_v)
+  res := my_numeric(mut i_x_v)
 
   //wrap output
-  return r.from_numeric(o_res_v)
+  return r.from_numeric(res)
 
 }
 ```

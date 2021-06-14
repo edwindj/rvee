@@ -9,6 +9,11 @@ pub fn as_int(x C.SEXP) int{
   return C.SCALAR_IVAL(x)
 }
 
+[manualfree]
+pub fn as_int_array(x C.SEXP) []int{
+  return as_integer(x).data
+}
+
 pub fn as_bool(x C.SEXP) bool{
   return C.SCALAR_LVAL(x) != 0
 }
@@ -48,6 +53,12 @@ pub fn from_int(x int) C.SEXP{
   return C.Rf_ScalarInteger(x)
 }
 
+[manualfree]
+pub fn from_int_array(x []int) C.SEXP{
+  return integer_from_ints(x).to_sexp()
+}
+
+
 pub fn from_bool(x bool) C.SEXP {
    return C.Rf_ScalarLogical(int(x))
 }
@@ -66,6 +77,10 @@ pub fn from_integer(x Integer) C.SEXP {
 }
 
 pub fn from_character(x Character) C.SEXP {
+  return x.to_sexp()
+}
+
+pub fn from_logical(x Logical) C.SEXP {
   return x.to_sexp()
 }
 

@@ -7,20 +7,20 @@ pub mut:
 }
 
 [manualfree]
-pub fn new_integer(len int) Integer {
+pub fn integer(len int) Integer {
 	sexp := C.Rf_allocVector(.intsxp, C.R_xlen_t(len))
 	data := unsafe {as_intarray(sexp)}
 	nv := Integer{sexp, data}
 	return protect(nv)
 }
 
-// pub fn new_numeric_vector(len int) NumericVector{
-// 	unsafe {
-// 	mut sexp := C.Rf_allocVector(.realsxp, xlen(len))
-// 	sexp = C.Rf_protect(sexp)
-// 	return NumericVector{sexp, true}
-// 	}
-// }
+[manualfree]
+pub fn integer_from_ints(x []int) Integer{
+	sexp := C.Rf_allocVector(.intsxp, C.R_xlen_t(x.len))
+	l := Integer{sexp: sexp, data: x}
+	l.sync()
+	return l
+}
 
 [manualfree]
 pub fn (v Integer) copy() Integer {
@@ -38,20 +38,24 @@ pub fn (v Integer) length() int {
 	return C.LENGTH(v.sexp)
 }
 
-fn (v Integer) to_sexp() C.SEXP {
+fn (v Integer) sync(){
+	// if pointer of R differs from v array
 	x := v.sexp
-	mut ptr := C.INTEGER(x)
-
-	if ptr != v.data.data {
+	if C.INTEGER(x) != v.data.data {
 		// copy the new data!
 		C.SETLENGTH(x, C.R_xlen_t(v.data.len))
 		// R reallocation?
-		ptr = C.INTEGER(x)
+		ptr := C.INTEGER(x)
 		unsafe{
 			C.memcpy(v.data.data, ptr, v.data.len * v.data.element_size)
 			v.data = as_ints(ptr, v.data.len)
 		}
 	}
+}
+
+
+fn (v Integer) to_sexp() C.SEXP {
+	v.sync()
 	return v.sexp
 }
 

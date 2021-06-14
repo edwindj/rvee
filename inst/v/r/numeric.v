@@ -7,7 +7,7 @@ pub mut:
 }
 
 [manualfree]
-pub fn new_numeric(len int) Numeric {
+pub fn numeric(len int) Numeric {
 	sexp := C.Rf_allocVector(.realsxp, C.R_xlen_t(len))
 	data := unsafe {as_f64array(sexp)}
 	nv := Numeric{sexp, data}

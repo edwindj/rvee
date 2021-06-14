@@ -17,5 +17,5 @@ Imports:
     whisker
 Suggests: 
     rmarkdown,
-    knitr
+    knitr, tinytest
 VignetteBuilder: knitr

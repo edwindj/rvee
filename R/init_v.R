@@ -12,11 +12,14 @@ generate_init_c <- function(fns, file=stdout(), pkg = "rvee"){
 generate_rv_export_v <- function(fns, file=stdout(), pkg = "rvee"){
   fns <- lapply(fns, function(fn){
     fn$num_args <- length(fn$input)
+
     fn$input <- lapply(fn$input,function(i){
+      i$type <- sub("^\\[\\](.*)", "\\1_array", i$type)
       i$type <- snake_case(i$type)
       i
     })
 
+    fn$result <- sub("^\\[\\](.*)", "\\1_array", fn$result)
     fn$result <- snake_case(fn$result)
     if (fn$result == ""){
       fn$result <- FALSE
@@ -53,9 +56,13 @@ generate_rv_export_R <- function(fns, file=stdout(), pkg = "rvee"){
 get_rtype <- function(x){
   switch( x
         , "f64"           = "numeric"
+        , "[]f64"         = "numeric"
         , "string"        = "character"
+        , "[]string"      = "character"
         , "int"           = "integer"
+        , "[]int"         = "integer"
         , "bool"          = "logical"
+        , "[]bool"        = "logical"
         , "void"          = "NULL"
         , "Numeric"       = "numeric"
         , "Integer"       = "integer"
