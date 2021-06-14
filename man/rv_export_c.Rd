@@ -4,10 +4,15 @@
 \alias{rv_export_c}
 \title{Generate rv_export files for .c}
 \usage{
-rv_export_c(pkg = ".")
+rv_export_c(pkg = ".", prefix = NULL)
 }
 \arguments{
 \item{pkg}{\code{character} location of package.}
+
+\item{prefix}{\code{character} optional prefix that is used in the wrapper generation}
+}
+\value{
+(invisibly) the list of parsed v functions.e
 }
 \description{
 Generates rv_export files from a \code{v} source file, that is located in the

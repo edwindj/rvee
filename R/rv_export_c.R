@@ -11,6 +11,8 @@
 #'
 #' @export
 #' @param pkg `character` location of package.
+#' @param prefix `character` optional prefix that is used in the wrapper generation
+#' @return (invisibly) the list of parsed v functions.e
 rv_export_c <- function(pkg=".", prefix=NULL){
   desc <- read.dcf(file.path(pkg, "DESCRIPTION"))
 
