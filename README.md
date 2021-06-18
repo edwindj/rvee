@@ -18,9 +18,15 @@ Create R extension packages with the [V programming
 language](https://vlang.io). V is a simple, safe and fast programming
 language with the speed of C.
 
-R has many good interfaces with programming languages C, fortran, cpp
-(Rcpp), python (reticulate), rust (), `rvee` provides this for the `v`
-programming language.
+R has good interfaces for many programming languages such as
+[C](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#System-and-foreign-language-interfaces)
+,
+[fortran](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#System-and-foreign-language-interfaces)
+, cpp (e.g. [Rcpp](http://www.rcpp.org/)) , python
+(e.g. [reticulate](https://rstudio.github.io/reticulate/)) and rust
+(e.g. [r-rust](https://github.com/r-rust)). R Package `rvee` intends to
+provide an easy toolkist for creating R package with the `v` programming
+language.
 
 ## Status
 
@@ -32,12 +38,12 @@ Interfacing:
     `rvee::rv_export_c()`
 -   [x] wraps simple input and return types: `f64`, `int`, `bool`,
     `string`
--   [ ] wraps array input and return types: `[]f64`, `[]int`, `[]bool`,
-    `[]string`
 -   [x] wraps `numeric`, `logical`, `integer` and `character` input and
     return types.
--   [ ] wraps `factor`, `list`, `data.frame` input and return types.
 -   [x] compiling and working :-)
+-   [ ] wraps `factor`, `list`, `data.frame` input and return types.
+-   [ ] wraps array input and return types: `[]f64`, `[]int`, `[]bool`,
+    `[]string`
 -   [ ] CRAN checks (remove c compiler warnings)
 
 r module (in v):
@@ -66,12 +72,12 @@ devtools::install_github("edwindj/rvee")
 
 ## Overview
 
-There are the following possible routes for creating an R extension with
-`v` code:
+Possible routes for creating an R extension with `v` code are:
 
-1.  Transpiling `V` code to `C` code and use it as a normal C extension.
+1.  Transpiling `V` code to `C` code and use it as a normal `C`
+    extension.
 2.  Using the `v` compiler to build a shared library linked to the R
-    shared library
+    shared library.
 
 Both options have their benefits and draw backs:
 
@@ -79,7 +85,7 @@ Both options have their benefits and draw backs:
     the compilation flags to pass CRAN checks etc. and
     removing/stripping code that is not needed by R.
 
-2.  Allows for a optimized shared library, but required `v` to be
+2.  Allows for an optimized shared library, but requires `v` to be
     installed by the installer (e.g. CRAN).
 
 ## Example
@@ -132,8 +138,8 @@ fn negate(x bool) bool {
 [rv_export]
 fn my_numeric(mut x Numeric) Numeric{
   //This changes the values in place!
-  for i, val in x.data {
-    x.data[i] = val + 1.
+  for mut val in x.data {
+    val += 1.
   }
   return x
 }

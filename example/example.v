@@ -19,8 +19,8 @@ fn negate(x bool) bool {
 [rv_export]
 fn my_numeric(mut x Numeric) Numeric{
   //This changes the values in place!
-  for i, val in x.data {
-    x.data[i] = val + 1.
+  for mut val in x.data {
+    val += 1.
   }
   return x
 }
