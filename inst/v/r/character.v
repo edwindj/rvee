@@ -8,9 +8,9 @@ pub mut:
     data []string
 }
 
-pub fn character(len int) &Character{
+pub fn character(len int) Character{
 	sexp := C.Rf_allocVector(.strsxp, C.R_xlen_t(len))
-	return &Character{sexp: sexp, data: []string{len:len}}
+	return Character{sexp: sexp, data: []string{len:len}}
 }
 
 fn (v Character) to_sexp() C.SEXP{

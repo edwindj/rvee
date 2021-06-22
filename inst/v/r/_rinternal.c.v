@@ -412,20 +412,26 @@ pub const (
 // LibExtern SEXP	R_Bracket2Symbol;   /* "[[" */
 // LibExtern SEXP	R_BracketSymbol;    /* "[" */
 // LibExtern SEXP	R_ClassSymbol;	    /* "class" */
+class_symbol = C.SEXP(C.R_ClassSymbol)
 // LibExtern SEXP	R_DeviceSymbol;	    /* ".Device" */
 // LibExtern SEXP	R_DimNamesSymbol;   /* "dimnames" */
 // LibExtern SEXP	R_DimSymbol;	    /* "dim" */
 // LibExtern SEXP	R_DollarSymbol;	    /* "$" */
+dollar_symbol = C.SEXP(C.R_DollarSymbol)
 // LibExtern SEXP	R_DotsSymbol;	    /* "..." */
 // LibExtern SEXP	R_DoubleColonSymbol;// "::"
 // LibExtern SEXP	R_DropSymbol;	    /* "drop" */
 // LibExtern SEXP	R_EvalSymbol;	    /* "eval" */
+eval_symbol = C.SEXP(C.R_EvalSymbol)
 // LibExtern SEXP	R_LastvalueSymbol;  /* ".Last.value" */
 // LibExtern SEXP	R_LevelsSymbol;	    /* "levels" */
+levels_symbol = C.SEXP(C.R_LevelsSymbol)
 // LibExtern SEXP	R_ModeSymbol;	    /* "mode" */
 // LibExtern SEXP	R_NaRmSymbol;	    /* "na.rm" */
+na_rm_symbol = C.SEXP(C.R_NaRmSymbol)
 // LibExtern SEXP	R_NameSymbol;	    /* "name" */
 // LibExtern SEXP	R_NamesSymbol;	    /* "names" */
+names_symbol = C.SEXP(C.R_NamesSymbol)
 // LibExtern SEXP	R_NamespaceEnvSymbol;// ".__NAMESPACE__."
 // LibExtern SEXP	R_PackageSymbol;    /* "package" */
 // LibExtern SEXP	R_PreviousSymbol;   /* "previous" */
@@ -533,6 +539,7 @@ blank_scalar_string = C.SEXP(C.R_BlankScalarString)
 // SEXP Rf_findVarInFrame3(SEXP, SEXP, Rboolean);
 // void R_removeVarFromFrame(SEXP, SEXP);
 // SEXP Rf_getAttrib(SEXP, SEXP);
+fn C.Rf_getAttrib(C.SEXP, C.SEXP) C.SEXP
 // SEXP Rf_GetArrayDimnames(SEXP);
 // SEXP Rf_GetColNames(SEXP);
 // void Rf_GetMatrixDimnames(SEXP, SEXP*, SEXP*, const char**, const char**);

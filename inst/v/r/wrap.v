@@ -41,6 +41,13 @@ pub fn as_integer(x C.SEXP) Integer {
   return Integer{x, data}
 }
 
+[manualfree]
+pub fn as_factor(x C.SEXP) Factor {
+  data := unsafe{as_ints(C.INTEGER(x), C.LENGTH(x))}
+  return Factor{x, data}
+}
+
+
 pub fn as_character(x C.SEXP) Character {
   data := as_string_array(x)
   return Character{sexp: x, data: data}

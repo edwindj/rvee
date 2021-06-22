@@ -1,6 +1,6 @@
 INIT_C <-
-  '/* Automatically generated with R package: `rvee`
-*
+'/* Automatically generated with R package: `rvee`
+* rvee version: {{version}}
 */
 
 #include <R.h>
@@ -30,7 +30,11 @@ generate_init_c <- function(fns, file=stdout(), pkg = "rvee"){
     fn
   })
   writeLines(
-    whisker::whisker.render(INIT_C, list(fns=fns, pkg=pkg)),
+    whisker::whisker.render(INIT_C, list(fns=fns
+                                        , pkg=pkg
+                                        , version = utils::packageVersion("rvee")
+                                        )
+                           ),
     con=file
   )
 }

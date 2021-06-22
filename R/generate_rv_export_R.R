@@ -1,6 +1,7 @@
 #' @noRd
 RV_EXPORT_R <-
-  "## Automatically generated with R package: `rvee`
+"## Automatically generated with R package: `rvee`
+#  rvee version: {{version}}
 #
 #' {{>register}}
 NULL
@@ -37,6 +38,7 @@ generate_rv_export_R <- function(fns, file=stdout(), pkg = "rvee"){
     whisker::whisker.render( sprintf(RV_EXPORT_R)
                              , list( fns = fns
                                      , pkg=pkg
+                                     , version = utils::packageVersion("rvee")
                              )
                              , partials = list(register = "@useDynLib {{pkg}}, .registration=TRUE")
     ),
@@ -59,6 +61,7 @@ get_rtype <- function(x){
           , "Integer"       = "integer"
           , "Logical"       = "logical"
           , "Character"     = "character"
+          , "Factor"        = "factor"
           , sprintf("unknown type: %s", x)
   )
 }
