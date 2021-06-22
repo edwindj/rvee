@@ -29,10 +29,12 @@ fn (l Logical) to_sexp() C.SEXP{
 fn (mut l Logical) set_data() []bool {
 	unsafe{
 		len := C.LENGTH(l.sexp)
+		l.data = []bool{len: len}
 		data := as_ints(C.LOGICAL(l.sexp), len)
 		for i, mut b in l.data {
 			b = (data[i] != 0)
 		}
+		//TODO setlength to 0 for SEXP?
 		return l.data
 	}
 }

@@ -42,7 +42,8 @@ pub fn as_integer(x C.SEXP) Integer {
 }
 
 pub fn as_character(x C.SEXP) Character {
-  return Character{sexp: x}
+  data := as_string_array(x)
+  return Character{sexp: x, data: data}
 }
 
 pub fn from_f64(x f64) C.SEXP {

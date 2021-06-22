@@ -26,9 +26,13 @@ rv_export_c <- function(pkg=".", prefix=NULL){
   pkg_R <- file.path(pkg, "R")
 
   fns <- scan_v_dir(pkg_src)
+
   generate_rv_export_v(fns, file.path(pkg_src, "rv_export.v"), pkg = prefix)
   generate_init_c(fns, file.path(pkg_src, "init.c"), pkg = prefix)
+  generate_makevars(file.path(pkg_src, "Makevars"))
+
   generate_rv_export_R(fns, file.path(pkg_R, "rv_export.R"), pkg = prefix)
+
   run_v_to_c(dir = file.path(pkg, "src"), pkg = prefix)
 
   invisible(fns)

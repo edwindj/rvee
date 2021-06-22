@@ -4,14 +4,17 @@ module r
 
 pub struct Character {
 	sexp C.SEXP
+pub mut:
+    data []string
 }
 
 pub fn character(len int) &Character{
 	sexp := C.Rf_allocVector(.strsxp, C.R_xlen_t(len))
-	return &Character{sexp: sexp}
+	return &Character{sexp: sexp, data: []string{len:len}}
 }
 
 fn (v Character) to_sexp() C.SEXP{
+	v.sync()
 	return v.sexp
 }
 
@@ -42,4 +45,46 @@ pub fn (mut v Character) set_strings(ss []string){
 		}
 	}
 	// v.data = []string{data: C.STRING_PTR_RO(v.sexp), len: ss.len, cap: ss.len}
+}
+
+fn (v Character) sync(){
+	C.SETLENGTH(v.sexp, C.R_xlen_t(v.data.len))
+	unsafe{
+		// we could use STRING_PTR here, but need to take care of dangling R string pointers. 
+		// may be first 
+		for i, s in v.data {
+			// should be mkCharCE
+			C.SET_STRING_ELT(v.sexp, C.R_xlen_t(i), C.Rf_mkChar(s.str))
+		}
+	}
+
+}
+
+fn (mut v Character) set_data() {
+	// this can be made much more efficient
+	unsafe {
+		len := C.LENGTH(v.sexp)
+		v.data = []string{len:len, cap: len}
+		ptr := C.STRING_PTR_RO(v.sexp)
+		for i, mut s in v.data {
+			//avoid copying by using literal...
+			c := C.R_CHAR(ptr[i])
+			s = c.vstring_literal()
+		}
+	}
+}
+
+fn as_string_array(x C.SEXP) []string {
+	// this can be made much more efficient
+	unsafe {
+		len := C.LENGTH(x)
+		mut ss := []string{len:len, cap: len}
+		ptr := C.STRING_PTR_RO(x)
+		for i, mut s in ss {
+			//avoid copying by using literal...
+			c := C.R_CHAR(ptr[i])
+			s = c.vstring_literal()
+		}
+		return ss
+	}
 }

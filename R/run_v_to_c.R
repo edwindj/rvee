@@ -7,6 +7,8 @@ run_v_to_c <- function(dir="./src", pkg="vtest", ...){
   #TODO set VCACHE or copy r mod to /tmp dir.
   args = c( "-o"   , sprintf("%s.c", pkg)
           , "-shared"
+          , "-prod"
+#          , "-freestanding"
           , "-autofree"
           , "-path", shQuote(sprintf("%s|@vlib|@vmodules", r_mod))
           , "."
