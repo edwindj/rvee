@@ -12,7 +12,7 @@ status](https://www.r-pkg.org/badges/version/rvee)](https://CRAN.R-project.org/p
 [![R-CMD-check](https://github.com/edwindj/rvee/workflows/R-CMD-check/badge.svg)](https://github.com/edwindj/rvee/actions)
 <!-- badges: end -->
 
-**Early work, expect errors and crashes! (not ready for production)**
+**Early work, expect errors! (not ready for production)**
 
 Create R extension packages with the [V programming
 language](https://vlang.io). V is a simple, safe and fast programming
