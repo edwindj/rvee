@@ -43,11 +43,11 @@ Interfacing:
 
 - [x] Generating all interfacing code from `v` file with `rvee::rv_export_c()`
 - [x] wraps simple input and return types: `f64`, `int`, `bool`,  `string`
-- [x] wraps `numeric`, `logical`, `integer` and `character` input and return types.
+- [x] wraps `numeric`, `logical`, `integer`, `character`, `factor` and `list` input and return types.
 - [x] compiling and working :-)
-- [ ] wraps `factor`, `list`, `data.frame` input and return types.
+- [ ] wraps `data.frame` input and return types.
 - [ ] wraps array input and return types: `[]f64`, `[]int`, `[]bool`,  `[]string`
-- [ ] CRAN checks (remove c compiler warnings)
+- [x] CRAN checks
 
 r module (in v):
 
@@ -55,9 +55,9 @@ r module (in v):
 - [x] `Integer`, direct access as a `[]int`
 - [x] `Character`, indirect access as a `[]string`. string values of R are reused, but newly created string (not managed by R) are copied.
 - [x] `Logical`, indirect access as a `[]bool`. automatically converts between `[]bool` and `logical`.
-- [ ] `Factor` 
-- [ ] `List`
-- [ ] `DataFrame`
+- [x] `Factor` 
+- [x] `List`
+- [x] `DataFrame`
 - [ ] `Environment`
 - [ ] `Function`
 

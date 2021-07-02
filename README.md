@@ -12,7 +12,7 @@ status](https://www.r-pkg.org/badges/version/rvee)](https://CRAN.R-project.org/p
 [![R-CMD-check](https://github.com/edwindj/rvee/workflows/R-CMD-check/badge.svg)](https://github.com/edwindj/rvee/actions)
 <!-- badges: end -->
 
-**Early work, expect errors! (not ready for production)**
+**Early work, expect errors and crashes! (not ready for production)**
 
 Create R extension packages with the [V programming
 language](https://vlang.io). V is a simple, safe and fast programming
@@ -38,13 +38,13 @@ Interfacing:
     `rvee::rv_export_c()`
 -   [x] wraps simple input and return types: `f64`, `int`, `bool`,
     `string`
--   [x] wraps `numeric`, `logical`, `integer` and `character` input and
-    return types.
+-   [x] wraps `numeric`, `logical`, `integer`, `character`, `factor` and
+    `list` input and return types.
 -   [x] compiling and working :-)
--   [ ] wraps `factor`, `list`, `data.frame` input and return types.
+-   [ ] wraps `data.frame` input and return types.
 -   [ ] wraps array input and return types: `[]f64`, `[]int`, `[]bool`,
     `[]string`
--   [ ] CRAN checks (remove c compiler warnings)
+-   [x] CRAN checks
 
 r module (in v):
 
@@ -54,9 +54,9 @@ r module (in v):
     are reused, but newly created string (not managed by R) are copied.
 -   [x] `Logical`, indirect access as a `[]bool`. automatically converts
     between `[]bool` and `logical`.
--   [ ] `Factor`
--   [ ] `List`
--   [ ] `DataFrame`
+-   [x] `Factor`
+-   [x] `List`
+-   [x] `DataFrame`
 -   [ ] `Environment`
 -   [ ] `Function`
 
