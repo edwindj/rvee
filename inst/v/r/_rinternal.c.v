@@ -185,14 +185,15 @@ fn C.STRING_ELT(x C.SEXP, i C.R_xlen_t) C.SEXP
 // SEXP (VECTOR_ELT)(SEXP x, R_xlen_t i);
 fn C.VECTOR_ELT(x C.SEXP, i C.R_xlen_t) C.SEXP
 // void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
-fn C.SET_STRING_ELT(x C.SEXP, i C.R_xlen_t, v C.SEXP)
+fn C.SET_STRING_ELT(x C.SEXP, i C.R_xlen_t, v C.SEXP) C.SEXP
 // SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
-fn C.SET_VECTOR_ELT(x C.SEXP, i C.R_xlen_t, v C.SEXP)
+fn C.SET_VECTOR_ELT(x C.SEXP, i C.R_xlen_t, v C.SEXP) C.SEXP
 // SEXP *(STRING_PTR)(SEXP x);
 fn C.STRING_PTR(x C.SEXP) &C.SEXP
 // const SEXP *(STRING_PTR_RO)(SEXP x);
 fn C.STRING_PTR_RO(x C.SEXP) &C.SEXP
 // SEXP * NORET (VECTOR_PTR)(SEXP x);
+fn C.VECTOR_PTR(x C.SEXP) &C.SEXP
 
 // /* ALTREP support */
 // void *(STDVEC_DATAPTR)(SEXP x);
@@ -500,6 +501,7 @@ blank_scalar_string = C.SEXP(C.R_BlankScalarString)
 // SEXP Rf_allocFormalsList6(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4, SEXP sym5, SEXP sym6);
 // SEXP Rf_allocMatrix(SEXPTYPE, int, int);
 // SEXP Rf_allocList(int);
+fn C.Rf_allocList(int) C.SEXP
 // SEXP Rf_allocS4Object(void);
 // SEXP Rf_allocSExp(SEXPTYPE);
 // SEXP Rf_allocVector3(SEXPTYPE, R_xlen_t, R_allocator_t*);
@@ -593,6 +595,7 @@ fn C.Rf_mkCharLen(s charptr, len int) C.SEXP
 // #endif
 // void Rf_readS3VarsFromFrame(SEXP, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*);
 // SEXP Rf_setAttrib(SEXP, SEXP, SEXP);
+fn C.Rf_setAttrib(C.SEXP, C.SEXP, C.SEXP) C.SEXP
 // void Rf_setSVector(SEXP*, int, SEXP);
 // void Rf_setVar(SEXP, SEXP, SEXP);
 // SEXP Rf_stringSuffix(SEXP, int);

@@ -14,3 +14,29 @@ pub fn copy<T>(T x) C.SEXP{
 pub fn length(x RObject) int{
 	return C.LENGTH(x.sexp)
 }
+
+pub fn (x RObject) names() ?[]string {
+	sexp := C.Rf_getAttrib(x.sexp, r.names_symbol)
+	if sexp == r.null_value {
+		return none
+	}
+	return as_string_array(sexp)
+}
+
+pub fn (x RObject) set_names(names []string){
+	nms := character_from_strings(names)
+	C.Rf_setAttrib(x.sexp, r.names_symbol, nms.sexp)
+}
+
+pub fn names(x RObject) ?Character {
+	sexp := C.Rf_getAttrib(x.sexp, r.names_symbol)
+	if sexp == r.null_value {
+		return none
+	}
+	return as_character(sexp)
+}
+
+pub fn set_names(x RObject, names []string){
+	nms := character_from_strings(names)
+	C.Rf_setAttrib(x.sexp, r.names_symbol, nms.sexp)
+}

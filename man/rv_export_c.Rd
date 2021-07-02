@@ -24,6 +24,7 @@ The following files are generated:
 \item "./R/rv_export.R": R functions that wrap the v functions
 \item "./src/rv_export.v": v wrappers, that interface v with R.
 \item "./src/init.c" : registration code, needed for the shared library.
-\item "./src/<pkg_name>.c" : registration code, needed for the shared library.
+\item "./src/Makevars" : settings that suppress compiler warnings.
+\item "./src/<pkg_name>.c" : generated c code from the \code{v} source code.
 }
 }

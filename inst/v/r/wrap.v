@@ -53,6 +53,10 @@ pub fn as_character(x C.SEXP) Character {
   return Character{sexp: x, data: data}
 }
 
+pub fn as_list(x C.SEXP) List{
+  return List{sexp: x}
+}
+
 pub fn from_f64(x f64) C.SEXP {
   return C.Rf_ScalarReal(x)
 }
@@ -94,4 +98,8 @@ pub fn from_logical(x Logical) C.SEXP {
 
 pub fn from_void() C.SEXP {
   return null_value
+}
+
+pub fn from_list(x List) C.SEXP {
+  return x.sexp
 }

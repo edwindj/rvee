@@ -13,6 +13,12 @@ pub fn character(len int) Character{
 	return Character{sexp: sexp, data: []string{len:len}}
 }
 
+pub fn character_from_strings(x []string) Character{
+	sexp := C.Rf_allocVector(.strsxp, C.R_xlen_t(0))
+	return Character{sexp: sexp, data: x}
+}
+
+
 fn (v Character) to_sexp() C.SEXP{
 	v.sync()
 	return v.sexp

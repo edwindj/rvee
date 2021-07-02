@@ -5,7 +5,8 @@ run_v_to_c <- function(dir="./src", pkg="vtest", ...){
   r_mod <- system.file("v", package="rvee")
   command <- "v"
   #TODO set VCACHE or copy r mod to /tmp dir.
-  args = c( "-o"   , sprintf("%s.c", pkg)
+  c_file <- sprintf("%s.c", pkg)
+  args = c( "-o"   , c_file
           , "-shared"
           , "-prod"
 #          , "-freestanding"
@@ -14,6 +15,10 @@ run_v_to_c <- function(dir="./src", pkg="vtest", ...){
           , "."
           )
   system2(command, args = args, ...)
+
+  # post operative surgery...
+  mod_c_file(c_file, pkg = pkg)
+
   # command <- paste(c(shQuote(command), args), collapse = " ")
   # print(command)
   # system(command, ...)

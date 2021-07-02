@@ -21,6 +21,13 @@ pub fn numeric(len int) Numeric {
 // 	return Numeric{sexp, true}
 // 	}
 // }
+pub fn numeric_from_f64s(data []f64) Numeric {
+  sexp := C.Rf_allocVector(.realsxp, C.R_xlen_t(data.len))
+  nv := Numeric{sexp, data}
+  nv.sync()
+  return nv
+}
+
 pub fn (v Numeric) copy() Numeric {
 	len := v.data.len
 	sexp := C.Rf_allocVector(.realsxp, C.R_xlen_t(len))
@@ -35,19 +42,23 @@ pub fn (v Numeric) length() int {
 	return C.LENGTH(v.sexp)
 }
 
-fn (v Numeric) to_sexp() C.SEXP {
-	x := v.sexp
-	mut ptr := C.REAL(x)
+[manualfree]
+fn(v Numeric) sync(){
+	mut ptr := C.REAL(v.sexp)
     if ptr != v.data.data {
 		// copy the new data!
-		C.SETLENGTH(x, C.R_xlen_t(v.data.len))
+		C.SETLENGTH(v.sexp, C.R_xlen_t(v.data.len))
 		// R ?
-		ptr = C.REAL(x)
+		ptr = C.REAL(v.sexp)
 		unsafe {
 			C.memcpy(v.data.data, ptr, v.data.len * v.data.element_size)
 			v.data = as_f64s(ptr, v.data.len)
 		}
 	}
+}
+
+fn (v Numeric) to_sexp() C.SEXP {
+	v.sync()
 	return v.sexp
 }
 

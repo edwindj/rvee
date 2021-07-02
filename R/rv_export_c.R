@@ -4,10 +4,12 @@
 #' `src` directory of a pkg.
 #'
 #' The following files are generated:
+#'
 #' - "./R/rv_export.R": R functions that wrap the v functions
 #' - "./src/rv_export.v": v wrappers, that interface v with R.
 #' - "./src/init.c" : registration code, needed for the shared library.
-#' - "./src/<pkg_name>.c" : registration code, needed for the shared library.
+#' - "./src/Makevars" : settings that suppress compiler warnings.
+#' - "./src/<pkg_name>.c" : generated c code from the `v` source code.
 #'
 #' @export
 #' @param pkg `character` location of package.

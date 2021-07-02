@@ -51,7 +51,7 @@ struct C.Rcomplex {
 // #define R_ERROR_H_
 
 // void NORET Rf_error(const char *, ...);
-fn C.Rf_error(x charptr, v ...charptr)
+fn C.Rf_error(charptr, ...voidptr)
 // void NORET UNIMPLEMENTED(const char *);
 fn C.UNIMPLEMENTED(x charptr)
 // void NORET WrongArgCount(const char *);
@@ -104,7 +104,9 @@ fn C.R_allocLD(nelem C.R_SIZE_T) voidptr
 // # define R_VA_LIST va_list
 
 // void Rprintf(const char *, ...);
+fn C.Rprintf(charptr, ...voidptr)
 // void REprintf(const char *, ...);
+fn C.REprintf(charptr, ...voidptr)
 // void Rvprintf(const char *, R_VA_LIST);
 // void REvprintf(const char *, R_VA_LIST);
 

@@ -8,7 +8,7 @@ pub mut:
 
 pub fn logical(len int) &Logical{
 	sexp := C.Rf_allocVector(.lglsxp, C.R_xlen_t(len))
-	mut l := Logical{sexp : sexp}
+	mut l := Logical{sexp: sexp}
 	l.set_data()
 	return &l
 }
