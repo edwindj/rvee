@@ -18,7 +18,13 @@ NULL
   {{#input}}
   {{name}} <- as.{{type}}({{name}})
   {{/input}}
+  {{#noresult}}
+  invisible(.Call('_{{pkg}}_{{name}}'{{#input}}, {{name}}{{/input}}))
+  {{/noresult}}
+  {{^noresult}}
   .Call('_{{pkg}}_{{name}}'{{#input}}, {{name}}{{/input}})
+  {{/noresult}}
+
 }
 
 {{/fns}}
@@ -30,6 +36,7 @@ generate_rv_export_R <- function(fns, file=stdout(), pkg = "rvee"){
       arg$type <- get_rtype(arg$type)
       arg
     })
+    fn$noresult <- fn$result %in% c("void", "")
     fn$result <- get_rtype(fn$result)
     fn
   })
@@ -47,6 +54,9 @@ generate_rv_export_R <- function(fns, file=stdout(), pkg = "rvee"){
 }
 
 get_rtype <- function(x){
+  if (x == ""){
+    x <- "void"
+  }
   switch( x
           , "f64"           = "numeric"
           , "[]f64"         = "numeric"
@@ -62,6 +72,7 @@ get_rtype <- function(x){
           , "Logical"       = "logical"
           , "Character"     = "character"
           , "Factor"        = "factor"
+          , "List"          = "list"
           , sprintf("unknown type: %s", x)
   )
 }

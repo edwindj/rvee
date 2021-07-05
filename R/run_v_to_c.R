@@ -1,4 +1,6 @@
-run_v_to_c <- function(dir="./src/v", outdir="./src", pkg="vtest", ...){
+run_v_to_c <- function( dir="./src/v", outdir="./src", pkg="vtest"
+                      , compile=FALSE, ...
+                      ){
   # TODO store v.exe and make this work for windows...
   outdir <- normalizePath(outdir)
   old_wd <- setwd(dir)
@@ -16,9 +18,21 @@ run_v_to_c <- function(dir="./src/v", outdir="./src", pkg="vtest", ...){
           , "."
           )
   system2(command, args = args, ...)
+  if (!file.exists(c_file)){
+    stop("v compiling error.", call. = FALSE)
+  }
 
   # post operative surgery...
   mod_c_file(c_file, pkg = pkg)
+
+  if (isTRUE(compile)){
+    setwd(outdir)
+    system2("R"
+           , args = c("CMD", "SHLIB", sprintf("%s.c", pkg), "init.c",
+                      "-Wno-unused-result", "-Wno-discarded-qualifiers"
+                     )
+            )
+  }
 
   # command <- paste(c(shQuote(command), args), collapse = " ")
   # print(command)

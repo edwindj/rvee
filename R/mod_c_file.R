@@ -1,8 +1,11 @@
 C_FILE <-
 '/* Automatically generated with V <https://vlang.io>
-*  using R package: `rvee`
+*  using R package: `rvee`.
 *  rvee version: {{version}}
-*  source: `./rv_export.v`
+*  source: `./v/rv_export.v`
+*
+*  note: builtin functions "panic", "exit", "print", "println", "eprint" and
+*        "eprintln" are adjusted and redirect to R.
 */
 '
 
@@ -22,48 +25,48 @@ mod_c_file <- function(c_file, pkg){
   end_function <- grep("^\\}", c_code)
   body_end <- end_function[end_function>body_begin][1]
   c_code <- c( c_code[1:body_begin]
-             , '\tRf_error("v error: %s", s.str);'
+             , '\tRf_error("%s", s.str);'
              , c_code[body_end:length(c_code)]
              )
 
   # redirect exit
-  c_code <- gsub("\\bexit\\((\\w+)\\)", 'Rf_error("v exit code: %d", \\1)', c_code)
+  c_code <- gsub("\\bexit\\((\\w+)\\)", 'Rf_error("exit code: %d", \\1)', c_code)
 
   # redirect print
   body_begin <- grep("^void print\\(", c_code)[2]
   end_function <- grep("^\\}", c_code)
   body_end <- end_function[end_function>body_begin][1]
   c_code <- c( c_code[1:body_begin]
-               , '\tRprintf("v lib: %s", s.str);'
-               , c_code[body_end:length(c_code)]
-  )
+             , '\tRprintf("%s", s.str);'
+             , c_code[body_end:length(c_code)]
+             )
 
     # redirect println
   body_begin <- grep("^void println", c_code)[2]
   end_function <- grep("^\\}", c_code)
   body_end <- end_function[end_function>body_begin][1]
   c_code <- c( c_code[1:body_begin]
-               , '\tRprintf("v lib: %s\\n", s.str);'
-               , c_code[body_end:length(c_code)]
-  )
+             , '\tRprintf("%s\\n", s.str);'
+             , c_code[body_end:length(c_code)]
+             )
 
   # redirect eprint
   body_begin <- grep("^void eprint\\(", c_code)[2]
   end_function <- grep("^\\}", c_code)
   body_end <- end_function[end_function>body_begin][1]
   c_code <- c( c_code[1:body_begin]
-               , '\tREprintf("v lib: %s", s.str);'
-               , c_code[body_end:length(c_code)]
-  )
+             , '\tREprintf("%s", s.str);'
+             , c_code[body_end:length(c_code)]
+             )
 
     # redirect eprintln
   body_begin <- grep("^void eprintln\\(", c_code)[2]
   end_function <- grep("^\\}", c_code)
   body_end <- end_function[end_function>body_begin][1]
   c_code <- c( c_code[1:body_begin]
-               , '\tREprintf("v lib: %s\\n", s.str);'
-               , c_code[body_end:length(c_code)]
-  )
+             , '\tREprintf("%s\\n", s.str);'
+             , c_code[body_end:length(c_code)]
+             )
 
   c_code <- c(preamble, c_code)
   writeLines(c_code, c_file)
