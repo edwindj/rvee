@@ -13,8 +13,9 @@
 #'
 #' @export
 #' @param pkg `character` location of package.
-#' @param prefix `character` optional prefix that is used in the wrapper generation
-#' @return (invisibly) the list of parsed v functions.e
+#' @param prefix `character` optional prefix that is used in the wrapper generation.
+#' If `NULL` the package name is used.
+#' @return (invisibly) the list of parsed v functions.
 rv_export_c <- function(pkg=".", prefix=NULL){
   desc <- read.dcf(file.path(pkg, "DESCRIPTION"))
 
@@ -25,17 +26,27 @@ rv_export_c <- function(pkg=".", prefix=NULL){
   }
 
   pkg_src <- file.path(pkg, "src")
+  pkg_vsrc <- file.path(pkg_src, "v")
   pkg_R <- file.path(pkg, "R")
 
-  fns <- scan_v_dir(pkg_src)
+  if (!dir.exists(pkg_vsrc)){
+    stop("directory '", pkg_vsrc, "' does not seem to exist.
+v source files are assumed to be in this directory."
+         , call. = FALSE)
+  }
 
-  generate_rv_export_v(fns, file.path(pkg_src, "rv_export.v"), pkg = prefix)
+  fns <- scan_v_dir(pkg_vsrc)
+
+  generate_rv_export_v(fns, file.path(pkg_vsrc, "rv_export.v"), pkg = prefix)
   generate_init_c(fns, file.path(pkg_src, "init.c"), pkg = prefix)
   generate_makevars(file.path(pkg_src, "Makevars"))
 
   generate_rv_export_R(fns, file.path(pkg_R, "rv_export.R"), pkg = prefix)
 
-  run_v_to_c(dir = file.path(pkg, "src"), pkg = prefix)
+  run_v_to_c( dir = file.path(pkg, "src", "v")
+            , outdir = file.path(pkg, "src")
+            , pkg = prefix
+            )
 
   invisible(fns)
 }
