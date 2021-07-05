@@ -19,3 +19,4 @@ Suggests:
     rmarkdown,
     knitr, tinytest
 VignetteBuilder: knitr
+URL: https://edwindj.github.io/rvee
