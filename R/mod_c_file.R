@@ -9,7 +9,7 @@ C_FILE <-
 */
 '
 
-#' modify c file so it redirects to R constructs when printing and errorring.
+#' modify c file so it redirects to R constructs when printing and erroring.
 #' @keywords internal
 mod_c_file <- function(c_file, pkg){
   c_code <- readLines(c_file)
