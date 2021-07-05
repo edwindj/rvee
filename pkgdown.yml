@@ -1,0 +1,10 @@
+pandoc: 2.7.3
+pkgdown: 1.6.1
+pkgdown_sha: ~
+articles:
+  intro: intro.html
+last_built: 2021-07-05T20:29Z
+urls:
+  reference: https://edwindj.github.io/rvee/reference
+  article: https://edwindj.github.io/rvee/articles
+
