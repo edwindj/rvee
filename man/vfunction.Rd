@@ -2,15 +2,33 @@
 % Please edit documentation in R/vfunction.R
 \name{vfunction}
 \alias{vfunction}
-\title{create an R wrapper from a v function.}
+\title{Create a R wrapper from a v function.}
 \usage{
-vfunction(sig, body)
+vfunction(sig, body, ret = "", code = "")
 }
 \arguments{
-\item{sig}{\code{character}}
+\item{sig}{\code{character} signature of the v function, i.e. the arguments}
 
-\item{body}{\code{character}}
+\item{body}{\code{character} v code with body of function}
+
+\item{ret}{\code{character} return type of the function}
+
+\item{code}{\code{character} v code, that is not part of the function body.}
+}
+\value{
+R function that will call the compiled code
 }
 \description{
-like \code{inline::cfunction}, but for \code{v}
+\code{vfunction} transpiles the supplied \code{v} code to \code{C}, compiles it,
+and return a R  function that calls the compiled code.
+\code{inline::cfunction}, but for \code{v}.
+}
+\examples{
+\dontrun{
+# create a compiled function with v code
+f <- vfunction("i int", body = "return i + 1", ret = "int")
+
+# and use it in R
+f(2)
+}
 }

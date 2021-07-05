@@ -8,11 +8,26 @@ fn {{{name}}}({{sig}}) {{{ret}}}{
 }
 "
 
-#' create an R wrapper from a v function.
+#' Create a R wrapper from a v function.
 #'
-#' like `inline::cfunction`, but for `v`.
+#' `vfunction` transpiles the supplied `v` code to `C`, compiles it,
+#' and return a R  function that calls the compiled code.
+#' `inline::cfunction`, but for `v`.
 #'
-#' @param body `character`
+#' @examples
+#' \dontrun{
+#' # create a compiled function with v code
+#' f <- vfunction("i int", body = "return i + 1", ret = "int")
+#'
+#' # and use it in R
+#' f(2)
+#' }
+#' @param sig `character` signature of the v function, i.e. the arguments
+#' @param body `character` v code with body of function
+#' @param ret `character` return type of the function
+#' @param code `character` v code, that is not part of the function body.
+#' @return R function that will call the compiled code
+#' @export
 vfunction <- function(sig, body, ret = "", code=""){
   dir_name <- tempfile()
   dir.create(dir_name, recursive = TRUE)

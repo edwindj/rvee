@@ -9,10 +9,11 @@ rv_export_c(pkg = ".", prefix = NULL)
 \arguments{
 \item{pkg}{\code{character} location of package.}
 
-\item{prefix}{\code{character} optional prefix that is used in the wrapper generation}
+\item{prefix}{\code{character} optional prefix that is used in the wrapper generation.
+If \code{NULL} the package name is used.}
 }
 \value{
-(invisibly) the list of parsed v functions.e
+(invisibly) the list of parsed v functions.
 }
 \description{
 Generates rv_export files from a \code{v} source file, that is located in the
