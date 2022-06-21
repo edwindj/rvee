@@ -20,7 +20,7 @@ library(rvee)
 
 `v_function` allows you to write v functions and call them within R.
  
-```{r}
+```{r, eval=FALSE}
 v_function('fn add(x int, y int, z int) int{
   sum := x + y + z
   return sum

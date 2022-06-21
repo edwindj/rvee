@@ -73,6 +73,14 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={V and R},
+  pdfauthor={Edwin de Jonge},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
 \newif\ifbibliography
 \usepackage{color}
 \usepackage{fancyvrb}
@@ -122,19 +130,11 @@
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
-\hypersetup{
-  pdftitle={V and R},
-  pdfauthor={Edwin de Jonge},
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
 
 \title{V and R}
 \subtitle{rvee: recreational v programming for R}
 \author{Edwin de Jonge}
-\date{Statistics Netherlands / UseR! 2022}
+\date{Statistics Netherlands / UseR! 2022, @edwindjonge}
 
 \begin{document}
 \frame{\titlepage}
@@ -149,31 +149,35 @@
 
 \begin{frame}[fragile]{Who am I?}
 \protect\hypertarget{who-am-i}{}
+\begin{block}{Edwin de Jonge}
+\protect\hypertarget{edwin-de-jonge}{}
 \begin{itemize}
 \tightlist
 \item
-  Edwin de Jonge, \url{http://github.com/edwindj}, @edwindjonge
-\item
   Statistical Consultant / R\&D at Statistics Netherlands / CBS
 \item
-  Author of some R packages (e.g.~\texttt{whisker}, \texttt{docopt}),
-  see \url{https://edwindj.r-universe.dev}
+  Author of some R packages (e.g.~\texttt{whisker}, \texttt{docopt}):
+  \url{https://edwindj.r-universe.dev}
 \item
-  Love R (and programming :-))
+  Love R and like programming in general
+\item
+  \url{http://github.com/edwindj}, @edwindjonge
 \end{itemize}
+\end{block}
 \end{frame}
 
 \begin{frame}[fragile]{Short summary}
 \protect\hypertarget{short-summary}{}
+\large
+
 \begin{itemize}
-\tightlist
 \item
   \texttt{V} new simple programming language
 \item
   \texttt{rvee} : \url{https://github.com/edwindj/rvee} helps to create
   R extension in V.
 \item
-  No runtime and R dependecies.
+  No runtime and R dependencies.
 \item
   Experimental, but works.
 \end{itemize}
@@ -202,32 +206,52 @@ Simple.fase, safe, compiled. For developing maintainable software.
 \item
   Very similar to \texttt{Go}, but ``improves'' on Go:
   \url{https://vlang.io/compare\#go}
+\item
+  Very light weight
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{V Features}
-\protect\hypertarget{v-features}{}
-\begin{block}{Safe}
-\protect\hypertarget{safe}{}
+\begin{frame}{\{.plain .fragile\} Syntax example}
+\protect\hypertarget{plain-.fragile-syntax-example}{}
+\begin{centering}
+  \includegraphics[width=0.8\paperwidth]{img/example.v}
+  \par
+\end{centering}
+\end{frame}
+
+\begin{frame}[fragile]{V is safe}
+\protect\hypertarget{v-is-safe}{}
+\includegraphics[width=0.1\paperwidth]{img/vlang}
+
 \begin{itemize}
 \tightlist
 \item
-  No \texttt{null}, \texttt{undefined} values
+  No \texttt{null}, \texttt{undefined} values: unexpected \texttt{null}
+  causes software damage.
 \item
-  immutable variables by default.
+  \textbf{immutable} variables by default, making it easier to optimize
+  and reason about code
 \item
-  Option/Result for functions
+  \textbf{Option}: functions returns \texttt{?Type} and compiler
+  generates error is empty return is not handled properly.
+\item
+  \textbf{Result}: functions can return \texttt{!Type} and compiler
+  generates error if run-time error is not handled properly.
+\item
+  Other cases a function always returns a value
+\item
+  Functions are pure by default (impurity is explicit)
 \end{itemize}
-\end{block}
+\end{frame}
 
-\begin{block}{V features}
-\protect\hypertarget{v-features-1}{}
+\begin{frame}{V features}
+\protect\hypertarget{v-features}{}
 \begin{itemize}
 \tightlist
 \item
   Easy C-interop (C-backend)
 \item
-  Fast compilation is fast!
+  Fast compilation!
 \item
   Zero cost abstractions
 \item
@@ -235,7 +259,16 @@ Simple.fase, safe, compiled. For developing maintainable software.
 \item
   Generics
 \end{itemize}
-\end{block}
+\end{frame}
+
+\begin{frame}[plain,fragile]{Fast compilation}
+\protect\hypertarget{fast-compilation}{}
+\begin{centering}
+  \includegraphics[width=0.8\paperwidth]{img/compilation}
+  \par
+\end{centering}
+
+\tiny source: \url{https://vlang.io}
 \end{frame}
 
 \begin{frame}[fragile]{Performance (from V lang website)}
@@ -255,27 +288,16 @@ Simple.fase, safe, compiled. For developing maintainable software.
   server is only 65 KB
 \end{itemize}
 
-\begin{block}{Different back-ends}
-\protect\hypertarget{different-back-ends}{}
+\begin{block}{V has different compilation back-ends (like rust and Go)}
+\protect\hypertarget{v-has-different-compilation-back-ends-like-rust-and-go}{}
 \begin{itemize}
 \tightlist
 \item
   native code (includes a REPL)
 \item
-  readable \texttt{C} code
+  readable(!) \texttt{C} code
 \item
   javascript
-\end{itemize}
-\end{block}
-
-\begin{block}{}
-\protect\hypertarget{section-1}{}
-\begin{itemize}
-\tightlist
-\item
-  Compilation is fast!
-\item
-  seconds vs minutes/hours
 \end{itemize}
 \end{block}
 \end{frame}
@@ -289,6 +311,10 @@ Simple.fase, safe, compiled. For developing maintainable software.
   immutable by default. Have to be marked \texttt{mut}able.
 \item
   V has \texttt{defer}, like R's \texttt{on.exit}
+\item
+  Simple syntax, very flexible
+\item
+  Has (some) reflection/code generation. (R beats that one)
 \end{itemize}
 \end{frame}
 
@@ -297,13 +323,14 @@ Simple.fase, safe, compiled. For developing maintainable software.
 \begin{itemize}
 \tightlist
 \item
-  V has a module and pkg system, containing v src code (not compiled)
+  V has a module and pkg system, containing \texttt{v} src code (not
+  compiled)
 \item
-  Typical v-compilation results in one binary:
+  Typical v-compilation results in one binary
 \item
   importing a module means including the v code.
 \item
-  you can link though to \texttt{C}, \texttt{CPP} libraries.
+  v can link though to \texttt{C}, \texttt{CPP} libraries.
 \end{itemize}
 \end{frame}
 
@@ -316,7 +343,23 @@ Simple.fase, safe, compiled. For developing maintainable software.
   functions written in V.
 \item
   Similar in concept to RCpp but for V.
+\item
+  But no \emph{compile-time} and \emph{run-time} dependencies in
+  resulting R package.
 \end{itemize}
+
+\begin{block}{Why-o-why}
+\protect\hypertarget{why-o-why}{}
+\begin{itemize}
+\tightlist
+\item
+  One of R's great powers is that of a glue language (just like S)
+\item
+  V is a nice low-level language, so why not?
+\item
+  Because it is fun :-)
+\end{itemize}
+\end{block}
 \end{frame}
 
 \begin{frame}[fragile]{Features \texttt{rvee}}
@@ -328,12 +371,11 @@ Simple.fase, safe, compiled. For developing maintainable software.
 \item
   include \texttt{v} package \texttt{r}, wrapper functions for R's C
   API.
-\item
 \end{itemize}
 \end{frame}
 
 \begin{frame}{}
-\protect\hypertarget{section-2}{}
+\protect\hypertarget{section-1}{}
 Comparison V vs Rust:
 
 \begin{itemize}
@@ -370,7 +412,7 @@ Comparison V vs Rust:
 
 \begin{frame}[fragile]{Thank you!}
 \protect\hypertarget{thank-you}{}
-\LargeInterested?
+\Large Interested?
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -380,7 +422,7 @@ Comparison V vs Rust:
 
 Or visit:
 
-\textbf{\url{http://github.com/edwindj/rvee}}
+\href{http://github.com/edwindj/rvee}{\textbf{http://github.com/edwindj/rvee}}
 \end{frame}
 
 \end{document}

@@ -2,7 +2,7 @@
 title: "V and R"
 subtitle: "rvee: recreational v programming for R" 
 author: "Edwin de Jonge"
-date: "Statistics Netherlands / UseR! 2022"
+date: "Statistics Netherlands / UseR! 2022, @edwindjonge"
 output:
   beamer_presentation:
     includes:
@@ -16,126 +16,155 @@ knitr::opts_chunk$set(eval = FALSE)
 library(rvee)
 ```
 
-## {.plain .fragile}
+##  {.plain .fragile}
+
+```{=tex}
 \begin{centering}
   \includegraphics[width=0.8\paperwidth]{img/rv}
   \par
 \end{centering}
-
+```
 ## Who am I?
 
-- Edwin de Jonge, http://github.com/edwindj, @edwindjonge
-- Statistical Consultant / R&D at Statistics Netherlands / CBS
-- Author of some R packages (e.g. `whisker`, `docopt`), see https://edwindj.r-universe.dev 
-- Love R (and programming :-))
+### Edwin de Jonge
+
+-   Statistical Consultant / R&D at Statistics Netherlands / CBS
+-   Author of some R packages (e.g. `whisker`, `docopt`): <https://edwindj.r-universe.dev>
+-   Love R and like programming in general
+-   <http://github.com/edwindj>, @edwindjonge
 
 ## Short summary
 
-- `V` new simple programming language
-- `rvee` : <https://github.com/edwindj/rvee> helps to create R extension in V.
-- No runtime and R dependecies.
-- Experimental, but works.
+\large
+
+-   `V` new simple programming language
+
+-   `rvee` : <https://github.com/edwindj/rvee> helps to create R extension in V.
+
+-   No runtime and R dependencies.
+
+-   Experimental, but works.
 
 ## What is V?
 
-- V is a programming language.
+-   V is a programming language.
 
-> Simple.fase, safe, compiled. For developing maintainable software.
+> Simple.fase, safe, compiled. 
+For developing maintainable software.
 
-- Website: <https://vlang.io/>
-- young, low-level, 
-- feels like scripting, but is strongly typed
-- Very similar to `Go`, but "improves" on Go: <https://vlang.io/compare#go>
+-   Website: <https://vlang.io/>
+-   young, low-level,
+-   feels like scripting, but is strongly typed
+-   Very similar to `Go`, but "improves" on Go: <https://vlang.io/compare#go>
+-   Very light weight
 
-## V Features
+## {.plain .fragile} Syntax example
 
-### Safe
+```{=tex}
+\begin{centering}
+  \includegraphics[width=0.8\paperwidth]{img/example.v}
+  \par
+\end{centering}
+```
 
-- No `null`, `undefined` values
-- immutable variables by default. 
-- Option/Result for functions
+## V is safe
 
+```{=tex}
+\includegraphics[width=0.1\paperwidth]{img/vlang}
+```
 
-### V features
+- No `null`, `undefined` values: unexpected `null` causes software damage. 
+- **immutable** variables by default, making it easier to optimize and reason about code
+- **Option**: functions returns `?Type` and compiler generates error is empty return is not handled properly.
+- **Result**: functions can return `!Type` and compiler generates error if run-time error is not handled properly.
+- Other cases a function always returns a value
+- Functions are pure by default (impurity is explicit)
 
-- Easy C-interop (C-backend)
-- Fast compilation is fast!
-- Zero cost abstractions
-- Sum Types
-- Generics
+## V features
+
+-   Easy C-interop (C-backend)
+-   Fast compilation!
+-   Zero cost abstractions
+-   Sum Types
+-   Generics
+
+## Fast compilation  {.plain .fragile} 
+\begin{centering}
+  \includegraphics[width=0.8\paperwidth]{img/compilation}
+  \par
+\end{centering}
+
+\tiny source: <https://vlang.io>
 
 ## Performance (from V lang website)
 
-- As fast as C (V's main backend compiles to human readable C)
-- C interop without any costs
-- Minimal amount of allocations
-- Built-in serialization without runtime reflection
-- Compiles to native binaries without any dependencies: a simple web server is only 65 KB
+-   As fast as C (V's main backend compiles to human readable C)
+-   C interop without any costs
+-   Minimal amount of allocations
+-   Built-in serialization without runtime reflection
+-   Compiles to native binaries without any dependencies: a simple web server is only 65 KB
 
-### Different back-ends
+### V has different compilation back-ends (like rust and Go)
 
-- native code (includes a REPL)
-- readable `C` code
-- javascript
-
-### 
-
-- Compilation is fast! 
-- seconds vs minutes/hours
+-   native code (includes a REPL)
+-   readable(!) `C` code
+-   javascript
 
 ## R similarities
 
-- V functions are _pure_ by default, like R, arguments are immutable by default. Have to be marked `mut`able.
+-   V functions are *pure* by default, like R, 
+arguments are immutable by default. Have to be marked `mut`able.
 - V has `defer`, like R's `on.exit`
+- Simple syntax, very flexible
+- Has (some) reflection/code generation. (R beats that one)
 
 ## V pkgs
 
-- V has a module and pkg system, containing v src code (not compiled)
-- Typical v-compilation results in one binary:
-- importing a module means including the v code.
-- you can link though to `C`, `CPP` libraries.
+-   V has a module and pkg system, containing `v` src code (not compiled)
+-   Typical v-compilation results in one binary
+-   importing a module means including the v code.
+-   v can link though to `C`, `CPP` libraries.
 
 ## What is `rvee`?
 
 - An experimental R package to create R package extensions with functions written in V.
 - Similar in concept to RCpp but for V.
+- But no _compile-time_ and _run-time_ dependencies in resulting R package.
+- (pkgname `rv` was already claimed for)
 
+### Why-o-why
+
+- One of R's great powers is that of a glue language (just like S)
+- V is a nice low-level language, so why not?
+- Because it is fun :-)
 
 ## Features `rvee`
+Two possible routes for using `v` as extension for R:
+- Use v compiler to link to `R.so` / `R.dll`, but requires v to be present on CRAN.
+- Use v transpiler to C and create a "normal" R package. This is `rvee`
 
-- Transpile v code into C package code
-- include `v` package `r`, wrapper functions for R's C API.
-- 
+### `rvee`
 
-##
+-   Transpiles v code into C package code
+-   include `vpkg`:`r` with wrapper functions for R's C API (70% complete)
 
-Comparison V vs Rust:
+## Status `rvee`
 
-- https://blog.logrocket.com/v-lang-vs-rust-comparing-build-languages/
-
-## Status
-
-- V is a young language, but already quite stable.
-- Generated code is in C
-
-- rvee is experimental,
-- Help is welcome!
-
-
-## `rvee` status
-
-- Experimental, expect (breaking) changes!
-- But..., hey it works :-)
+-   V is a young language, but already quite stable.
+-   Generated code is in C
+-   rvee is experimental,
+-   Help is welcome!
+-   Experimental, expect (breaking) changes!
+-   But..., hey it works :-) 
 
 ## Thank you!
 
+\Large Interested?
 
-\LargeInterested?
-
-```r
+``` r
 remotes::install_github("edwindj/rvee")
 ```
 
 Or visit:
 
-**[http://github.com/edwindj/rvee](http://github.com/edwindj/rvee)**
+[**http://github.com/edwindj/rvee**](http://github.com/edwindj/rvee)
