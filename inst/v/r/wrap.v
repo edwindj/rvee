@@ -14,6 +14,19 @@ pub fn as_int_array(x C.SEXP) []int{
   return as_integer(x).data
 }
 
+[manualfree]
+pub fn as_f64_array(x C.SEXP) []f64{
+  return as_numeric(x).data
+}
+
+// [manualfree]
+// pub fn as_string_array(x C.SEXP) []string {
+//   mut ch := as_character(x)
+//   ch.sync()
+//   return ch.data
+// }
+
+
 pub fn as_bool(x C.SEXP) bool{
   return C.SCALAR_LVAL(x) != 0
 }
@@ -70,6 +83,10 @@ pub fn from_int_array(x []int) C.SEXP{
   return integer_from_ints(x).to_sexp()
 }
 
+[manualfree]
+pub fn from_f64_array(x []f64) C.SEXP{
+  return numeric_from_f64s(x).to_sexp()
+}
 
 pub fn from_bool(x bool) C.SEXP {
    return C.Rf_ScalarLogical(int(x))

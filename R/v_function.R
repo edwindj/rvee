@@ -1,6 +1,8 @@
 V_FUNC <-
 "
+{{#r_module}}
 import r
+{{/r_module}}
 
 [rv_export]
 {{{code}}}
@@ -9,8 +11,10 @@ import r
 #' Create a R wrapper from a v function.
 #'
 #' `v_function` transpiles the supplied `v` code to `C`, compiles it,
-#' and return a R  function that calls the compiled code.
+#' and returns a R function that calls the compiled code.
 #' `Rcpp::cppFunction`, but for `v`.
+#'
+#' Note: R specific classes in `v` can be found in the `r` module.
 #'
 #' @examples
 #' \dontrun{
@@ -23,18 +27,22 @@ import r
 #' add_one(2)
 #' }
 #' @param code `character` v code that defines the v function.
+#' @param verbose if `TRUE` the compilation parameters will be shown.
 #' @return R function that will call the compiled code
 #' @export
-v_function <- function(code){
+v_function <- function(code, verbose=FALSE){
   dir_name <- tempfile()
   dir.create(dir_name, recursive = TRUE)
+
   fn_file_v <- tempfile(tmpdir = dir_name, fileext = ".v")
   fn_file_c <- tempfile(tmpdir = dir_name, fileext = ".c")
+
+  r_module <- any(grepl("\\br\\.", code))
 
   rv_export.R <- file.path(dir_name, "rv_export.R")
 
   v_code <- whisker::whisker.render( V_FUNC
-                                   , list( code = code)
+                                   , list( code = code, r_module = r_module)
                                    )
   writeLines(v_code, fn_file_v)
   writeLines(v_code)
@@ -47,7 +55,13 @@ v_function <- function(code){
   generate_init_c(fns, file.path(dir_name, "init.c"), pkg="rvee")
 
   # supressing warning!
-  run_v_to_c(dir_name, outdir=dir_name, pkg="rvee", compile=TRUE)
+  run_v_to_c( dir_name
+            , outdir=dir_name
+            , pkg = "rvee"
+            , prod = FALSE
+            , compile=TRUE
+            , verbose = verbose
+            )
   shlib <- file.path(dir_name, "rvee.so")
   dyn.load(shlib)
   rcode <- readLines(rv_export.R)

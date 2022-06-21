@@ -20,8 +20,9 @@ pub fn character_from_strings(x []string) Character{
 
 
 fn (v Character) to_sexp() C.SEXP{
-	v.sync()
-	return v.sexp
+	mut vs := v
+	vs.sync()
+	return vs.sexp
 }
 
 pub fn (v Character) get_strings() []string {
@@ -53,7 +54,7 @@ pub fn (mut v Character) set_strings(ss []string){
 	// v.data = []string{data: C.STRING_PTR_RO(v.sexp), len: ss.len, cap: ss.len}
 }
 
-fn (v Character) sync(){
+fn (mut v Character) sync(){
 	C.SETLENGTH(v.sexp, C.R_xlen_t(v.data.len))
 	unsafe{
 		// we could use STRING_PTR here, but need to take care of dangling R string pointers. 

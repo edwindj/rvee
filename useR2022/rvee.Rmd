@@ -1,0 +1,141 @@
+---
+title: "V and R"
+subtitle: "rvee: recreational v programming for R" 
+author: "Edwin de Jonge"
+date: "Statistics Netherlands / UseR! 2022"
+output:
+  beamer_presentation:
+    includes:
+      in_header: header.tex
+    keep_tex: yes
+    theme: "Frankfurt"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+library(rvee)
+```
+
+## {.plain .fragile}
+\begin{centering}
+  \includegraphics[width=0.8\paperwidth]{img/rv}
+  \par
+\end{centering}
+
+## Who am I?
+
+- Edwin de Jonge, http://github.com/edwindj, @edwindjonge
+- Statistical Consultant / R&D at Statistics Netherlands / CBS
+- Author of some R packages (e.g. `whisker`, `docopt`), see https://edwindj.r-universe.dev 
+- Love R (and programming :-))
+
+## Short summary
+
+- `V` new simple programming language
+- `rvee` : <https://github.com/edwindj/rvee> helps to create R extension in V.
+- No runtime and R dependecies.
+- Experimental, but works.
+
+## What is V?
+
+- V is a programming language.
+
+> Simple.fase, safe, compiled. For developing maintainable software.
+
+- Website: <https://vlang.io/>
+- young, low-level, 
+- feels like scripting, but is strongly typed
+- Very similar to `Go`, but "improves" on Go: <https://vlang.io/compare#go>
+
+## V Features
+
+### Safe
+
+- No `null`, `undefined` values
+- immutable variables by default. 
+- Option/Result for functions
+
+
+### V features
+
+- Easy C-interop (C-backend)
+- Fast compilation is fast!
+- Zero cost abstractions
+- Sum Types
+- Generics
+
+## Performance (from V lang website)
+
+- As fast as C (V's main backend compiles to human readable C)
+- C interop without any costs
+- Minimal amount of allocations
+- Built-in serialization without runtime reflection
+- Compiles to native binaries without any dependencies: a simple web server is only 65 KB
+
+### Different back-ends
+
+- native code (includes a REPL)
+- readable `C` code
+- javascript
+
+### 
+
+- Compilation is fast! 
+- seconds vs minutes/hours
+
+## R similarities
+
+- V functions are _pure_ by default, like R, arguments are immutable by default. Have to be marked `mut`able.
+- V has `defer`, like R's `on.exit`
+
+## V pkgs
+
+- V has a module and pkg system, containing v src code (not compiled)
+- Typical v-compilation results in one binary:
+- importing a module means including the v code.
+- you can link though to `C`, `CPP` libraries.
+
+## What is `rvee`?
+
+- An experimental R package to create R package extensions with functions written in V.
+- Similar in concept to RCpp but for V.
+
+
+## Features `rvee`
+
+- Transpile v code into C package code
+- include `v` package `r`, wrapper functions for R's C API.
+- 
+
+##
+
+Comparison V vs Rust:
+
+- https://blog.logrocket.com/v-lang-vs-rust-comparing-build-languages/
+
+## Status
+
+- V is a young language, but already quite stable.
+- Generated code is in C
+
+- rvee is experimental,
+- Help is welcome!
+
+
+## `rvee` status
+
+- Experimental, expect (breaking) changes!
+- But..., hey it works :-)
+
+## Thank you!
+
+
+\LargeInterested?
+
+```r
+remotes::install_github("edwindj/rvee")
+```
+
+Or visit:
+
+**[http://github.com/edwindj/rvee](http://github.com/edwindj/rvee)**

@@ -14,7 +14,7 @@ NULL
 #' {{#input}}@param {{name}} {{type}}{{/input}}
 #' @return {{result}}
 #' @keywords internal
-{{pkg}}_{{name}} <- function({{#input}}{{name}}{{/input}}){
+{{pkg}}_{{name}} <- function({{#input}}{{^first}}, {{/first}}{{name}}{{/input}}){
   {{#input}}
   {{name}} <- as.{{type}}({{name}})
   {{/input}}
@@ -57,6 +57,7 @@ get_rtype <- function(x){
   if (x == ""){
     x <- "void"
   }
+  x <- sub("^r\\.", "", x)
   switch( x
           , "f64"           = "numeric"
           , "[]f64"         = "numeric"

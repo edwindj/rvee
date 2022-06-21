@@ -6,6 +6,20 @@ pub struct Protect {
 		count int
 }
 
+fn (mut p Protect) sexp(x C.SEXP) C.SEXP {
+	sexp := C.Rf_protect(x)
+
+	//HACK mutating a global const...
+	unsafe{
+		p.count += 1
+	}
+	// this would be threadsafe...
+	// count := <-p.ch
+	// p.ch <-(count + 1)
+	return sexp
+}
+
+
 fn (p Protect) add(o RObject) C.SEXP {
 	sexp := C.Rf_protect(o.sexp)
 
@@ -37,3 +51,8 @@ pub fn protect<T>(x T) T{
 	return T{sexp}
 }
 
+fn protect_sexp(x C.SEXP) C.SEXP{
+	return x
+	// mut prot := r.protected
+	// return prot.sexp(x)
+}

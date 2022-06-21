@@ -1,5 +1,7 @@
 run_v_to_c <- function( dir="./src/v", outdir="./src", pkg="vtest"
-                      , compile=FALSE, ...
+                      , prod = TRUE
+                      , compile=FALSE
+                      , verbose=FALSE, ...
                       ){
   # TODO store v.exe and make this work for windows...
   outdir <- normalizePath(outdir)
@@ -11,7 +13,7 @@ run_v_to_c <- function( dir="./src/v", outdir="./src", pkg="vtest"
   c_file <- file.path(outdir, sprintf("%s.c", pkg))
   args = c( "-o"   , c_file
           , "-shared"
-          , "-prod"
+          , if (isTRUE(prod)) "-prod"
 #          , "-freestanding"
           , "-autofree"
           , "-path", shQuote(sprintf("%s|@vlib|@vmodules", r_mod))
@@ -31,7 +33,8 @@ run_v_to_c <- function( dir="./src/v", outdir="./src", pkg="vtest"
            , args = c("CMD", "SHLIB", sprintf("%s.c", pkg), "init.c",
                       "-Wno-unused-result", "-Wno-discarded-qualifiers"
                      )
-            )
+           , stdout = if (verbose) "" else FALSE
+           )
   }
 
   # command <- paste(c(shQuote(command), args), collapse = " ")

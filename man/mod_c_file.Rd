@@ -2,11 +2,11 @@
 % Please edit documentation in R/mod_c_file.R
 \name{mod_c_file}
 \alias{mod_c_file}
-\title{modify c file so it redirects to R constructs when printing and errorring.}
+\title{modify c file so it redirects to R constructs when printing and erroring.}
 \usage{
 mod_c_file(c_file, pkg)
 }
 \description{
-modify c file so it redirects to R constructs when printing and errorring.
+modify c file so it redirects to R constructs when printing and erroring.
 }
 \keyword{internal}

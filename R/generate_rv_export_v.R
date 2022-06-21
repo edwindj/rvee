@@ -34,15 +34,12 @@ generate_rv_export_v <- function(fns, file=stdout(), pkg = "rvee"){
 
     fn$input <- lapply(fn$input,function(i){
       i$type <- sub("^\\[\\](.*)", "\\1_array", i$type)
-      i$type <- snake_case(i$type)
+      i$type <- sub("^r\\.", "", snake_case(i$type))
       i
     })
-    if (length(fn$input)){
-      fn$input[[1]]$first <- TRUE
-    }
 
     fn$result <- sub("^\\[\\](.*)", "\\1_array", fn$result)
-    fn$result <- snake_case(fn$result)
+    fn$result <- sub("^r\\.","",snake_case(fn$result))
     if (fn$result == ""){
       fn$result <- FALSE
     }

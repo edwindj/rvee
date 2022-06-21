@@ -1,0 +1,386 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+]{beamer}
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usetheme[]{Frankfurt}
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\newif\ifbibliography
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={V and R},
+  pdfauthor={Edwin de Jonge},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{V and R}
+\subtitle{rvee: recreational v programming for R}
+\author{Edwin de Jonge}
+\date{Statistics Netherlands / UseR! 2022}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}[plain,fragile]{}
+\protect\hypertarget{section}{}
+\begin{centering}
+  \includegraphics[width=0.8\paperwidth]{img/rv}
+  \par
+\end{centering}
+\end{frame}
+
+\begin{frame}[fragile]{Who am I?}
+\protect\hypertarget{who-am-i}{}
+\begin{itemize}
+\tightlist
+\item
+  Edwin de Jonge, \url{http://github.com/edwindj}, @edwindjonge
+\item
+  Statistical Consultant / R\&D at Statistics Netherlands / CBS
+\item
+  Author of some R packages (e.g.~\texttt{whisker}, \texttt{docopt}),
+  see \url{https://edwindj.r-universe.dev}
+\item
+  Love R (and programming :-))
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Short summary}
+\protect\hypertarget{short-summary}{}
+\begin{itemize}
+\tightlist
+\item
+  \texttt{V} new simple programming language
+\item
+  \texttt{rvee} : \url{https://github.com/edwindj/rvee} helps to create
+  R extension in V.
+\item
+  No runtime and R dependecies.
+\item
+  Experimental, but works.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{What is V?}
+\protect\hypertarget{what-is-v}{}
+\begin{itemize}
+\tightlist
+\item
+  V is a programming language.
+\end{itemize}
+
+\begin{quote}
+Simple.fase, safe, compiled. For developing maintainable software.
+\end{quote}
+
+\begin{itemize}
+\tightlist
+\item
+  Website: \url{https://vlang.io/}
+\item
+  young, low-level,
+\item
+  feels like scripting, but is strongly typed
+\item
+  Very similar to \texttt{Go}, but ``improves'' on Go:
+  \url{https://vlang.io/compare\#go}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{V Features}
+\protect\hypertarget{v-features}{}
+\begin{block}{Safe}
+\protect\hypertarget{safe}{}
+\begin{itemize}
+\tightlist
+\item
+  No \texttt{null}, \texttt{undefined} values
+\item
+  immutable variables by default.
+\item
+  Option/Result for functions
+\end{itemize}
+\end{block}
+
+\begin{block}{V features}
+\protect\hypertarget{v-features-1}{}
+\begin{itemize}
+\tightlist
+\item
+  Easy C-interop (C-backend)
+\item
+  Fast compilation is fast!
+\item
+  Zero cost abstractions
+\item
+  Sum Types
+\item
+  Generics
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Performance (from V lang website)}
+\protect\hypertarget{performance-from-v-lang-website}{}
+\begin{itemize}
+\tightlist
+\item
+  As fast as C (V's main backend compiles to human readable C)
+\item
+  C interop without any costs
+\item
+  Minimal amount of allocations
+\item
+  Built-in serialization without runtime reflection
+\item
+  Compiles to native binaries without any dependencies: a simple web
+  server is only 65 KB
+\end{itemize}
+
+\begin{block}{Different back-ends}
+\protect\hypertarget{different-back-ends}{}
+\begin{itemize}
+\tightlist
+\item
+  native code (includes a REPL)
+\item
+  readable \texttt{C} code
+\item
+  javascript
+\end{itemize}
+\end{block}
+
+\begin{block}{}
+\protect\hypertarget{section-1}{}
+\begin{itemize}
+\tightlist
+\item
+  Compilation is fast!
+\item
+  seconds vs minutes/hours
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{R similarities}
+\protect\hypertarget{r-similarities}{}
+\begin{itemize}
+\tightlist
+\item
+  V functions are \emph{pure} by default, like R, arguments are
+  immutable by default. Have to be marked \texttt{mut}able.
+\item
+  V has \texttt{defer}, like R's \texttt{on.exit}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{V pkgs}
+\protect\hypertarget{v-pkgs}{}
+\begin{itemize}
+\tightlist
+\item
+  V has a module and pkg system, containing v src code (not compiled)
+\item
+  Typical v-compilation results in one binary:
+\item
+  importing a module means including the v code.
+\item
+  you can link though to \texttt{C}, \texttt{CPP} libraries.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{What is \texttt{rvee}?}
+\protect\hypertarget{what-is-rvee}{}
+\begin{itemize}
+\tightlist
+\item
+  An experimental R package to create R package extensions with
+  functions written in V.
+\item
+  Similar in concept to RCpp but for V.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Features \texttt{rvee}}
+\protect\hypertarget{features-rvee}{}
+\begin{itemize}
+\tightlist
+\item
+  Transpile v code into C package code
+\item
+  include \texttt{v} package \texttt{r}, wrapper functions for R's C
+  API.
+\item
+\end{itemize}
+\end{frame}
+
+\begin{frame}{}
+\protect\hypertarget{section-2}{}
+Comparison V vs Rust:
+
+\begin{itemize}
+\tightlist
+\item
+  \url{https://blog.logrocket.com/v-lang-vs-rust-comparing-build-languages/}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Status}
+\protect\hypertarget{status}{}
+\begin{itemize}
+\item
+  V is a young language, but already quite stable.
+\item
+  Generated code is in C
+\item
+  rvee is experimental,
+\item
+  Help is welcome!
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\texttt{rvee} status}
+\protect\hypertarget{rvee-status}{}
+\begin{itemize}
+\tightlist
+\item
+  Experimental, expect (breaking) changes!
+\item
+  But\ldots, hey it works :-)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Thank you!}
+\protect\hypertarget{thank-you}{}
+\LargeInterested?
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{remotes}\SpecialCharTok{::}\FunctionTok{install\_github}\NormalTok{(}\StringTok{"edwindj/rvee"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Or visit:
+
+\textbf{\url{http://github.com/edwindj/rvee}}
+\end{frame}
+
+\end{document}

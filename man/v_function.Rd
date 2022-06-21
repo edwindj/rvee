@@ -14,8 +14,11 @@ R function that will call the compiled code
 }
 \description{
 \code{v_function} transpiles the supplied \code{v} code to \code{C}, compiles it,
-and return a R  function that calls the compiled code.
+and returns a R function that calls the compiled code.
 \code{Rcpp::cppFunction}, but for \code{v}.
+}
+\details{
+Note: R specific classes in \code{v} can be found in the \code{r} module.
 }
 \examples{
 \dontrun{

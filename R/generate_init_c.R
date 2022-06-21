@@ -27,9 +27,6 @@ extern void R_init_{{pkg}}(DllInfo *dll) {
 generate_init_c <- function(fns, file=stdout(), pkg = "rvee"){
   fns <- lapply(fns, function(fn){
     fn$num_args <- length(fn$input)
-    if (fn$num_args){
-      fn$input[[1]]$first <- TRUE
-    }
     fn
   })
   writeLines(

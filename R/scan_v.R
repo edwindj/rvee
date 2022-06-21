@@ -46,15 +46,19 @@ scan_v_fn <- function(fns){
 
 scan_v_input <- function(input){
   input <- trimws(strsplit(input, ",")[[1]])
-  lapply(strsplit(input, "\\s+"), function(arg){
+  input <- lapply(strsplit(input, "\\s+"), function(arg){
     mut <- FALSE
     if (length(arg) > 2){
       arg <- arg[-1]
       mut <- TRUE
-      #stop("'mut' arguments are not supported:", input)
     }
     list(name = arg[1], type=arg[2], mut = mut)
   })
+  # needed for "," separation of arguments
+  if (length(input) > 0){
+    input[[1]]$first <- TRUE
+  }
+  input
 }
 
 

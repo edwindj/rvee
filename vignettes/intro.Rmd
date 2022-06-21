@@ -17,3 +17,17 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(rvee)
 ```
+
+`v_function` allows you to write v functions and call them within R.
+ 
+```{r}
+v_function('fn add(x int, y int, z int) int{
+  sum := x + y + z
+  return sum
+}')
+
+add
+add(1, 2, 3)
+```
+
+
