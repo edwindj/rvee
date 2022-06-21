@@ -4,10 +4,12 @@
 \alias{v_function}
 \title{Create a R wrapper from a v function.}
 \usage{
-v_function(code)
+v_function(code, verbose = FALSE)
 }
 \arguments{
 \item{code}{\code{character} v code that defines the v function.}
+
+\item{verbose}{if \code{TRUE} the compilation parameters will be shown.}
 }
 \value{
 R function that will call the compiled code
