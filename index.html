@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,23 +33,17 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">rvee</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0.9000</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -71,49 +67,41 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="rvee" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#rvee" class="anchor"></a><code>rvee</code>
+<div class="section level1">
+<div class="page-header"><h1 id="rvee">
+<code>rvee</code><a class="anchor" aria-label="anchor" href="#rvee"></a>
 </h1></div>
-<div id="recreational-v-programming-for-r--wip" class="section level2">
-<h2 class="hasAnchor">
-<a href="#recreational-v-programming-for-r--wip" class="anchor"></a>Recreational V programming for R / WIP</h2>
+<div class="section level2">
+<h2 id="recreational-v-programming-for-r--wip">Recreational V programming for R / WIP<a class="anchor" aria-label="anchor" href="#recreational-v-programming-for-r--wip"></a>
+</h2>
 <!-- badges: start -->
-
 <p><strong>Early work! (not ready for production)</strong></p>
-<p>Create R extension packages with the <a href="https://vlang.io">V programming language</a>. V is a simple, safe and fast programming language with the speed of C.</p>
-<p>R has good interfaces for many programming languages such as <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html#System-and-foreign-language-interfaces">C</a> , <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html#System-and-foreign-language-interfaces">fortran</a> , cpp (e.g. <a href="http://www.rcpp.org/">Rcpp</a>) , python (e.g. <a href="https://rstudio.github.io/reticulate/">reticulate</a>) and rust (e.g. <a href="https://github.com/r-rust">r-rust</a>). R Package <code>rvee</code> intends to provide an easy toolkist for creating R packages with the <code>v</code> programming language.</p>
+<p>Create R extension packages with the <a href="https://vlang.io" class="external-link">V programming language</a>. V is a simple, safe and fast programming language with the speed of C.</p>
+<p>R has good interfaces for many programming languages such as <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html#System-and-foreign-language-interfaces" class="external-link">C</a> , <a href="https://cran.r-project.org/doc/manuals/r-release/R-exts.html#System-and-foreign-language-interfaces" class="external-link">fortran</a> , cpp (e.g. <a href="http://www.rcpp.org/" class="external-link">Rcpp</a>) , python (e.g. <a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a>) and rust (e.g. <a href="https://github.com/r-rust" class="external-link">r-rust</a>). R Package <code>rvee</code> intends to provide an easy toolkist for creating R packages with the <code>v</code> programming language.</p>
 </div>
-<div id="status" class="section level2">
-<h2 class="hasAnchor">
-<a href="#status" class="anchor"></a>Status</h2>
+<div class="section level2">
+<h2 id="status">Status<a class="anchor" aria-label="anchor" href="#status"></a>
+</h2>
 <p>Translation to <code>C</code> and compilation 🎉!</p>
 <p>Interfacing:</p>
 <ul>
 <li>
-<input type="checkbox" disabled checked>
-Generating all interfacing code from <code>v</code> file with <code><a href="reference/rv_export_c.html">rvee::rv_export_c()</a></code>
+<input type="checkbox" disabled checked>Generating all interfacing code from <code>v</code> file with <code><a href="reference/rv_export_c.html">rvee::rv_export_c()</a></code>
 </li>
 <li>
-<input type="checkbox" disabled checked>
-wraps simple input and return types: <code>f64</code>, <code>int</code>, <code>bool</code>, <code>string</code>
+<input type="checkbox" disabled checked>wraps simple input and return types: <code>f64</code>, <code>int</code>, <code>bool</code>, <code>string</code>
 </li>
 <li>
-<input type="checkbox" disabled checked>
-wraps <code>numeric</code>, <code>logical</code>, <code>integer</code>, <code>character</code>, <code>factor</code> and <code>list</code> input and return types.</li>
+<input type="checkbox" disabled checked>wraps <code>numeric</code>, <code>logical</code>, <code>integer</code>, <code>character</code>, <code>factor</code> and <code>list</code> input and return types.</li>
 <li>
-<input type="checkbox" disabled checked>
-compiling and working :-)</li>
+<input type="checkbox" disabled checked>compiling and working :-)</li>
 <li>
-<input type="checkbox" disabled>
-wraps <code>data.frame</code> input and return types.</li>
+<input type="checkbox" disabled>wraps <code>data.frame</code> input and return types.</li>
 <li>
-<input type="checkbox" disabled>
-wraps array input and return types: <code>[]f64</code>, <code>[]int</code>, <code>[]bool</code>, <code>[]string</code>
+<input type="checkbox" disabled>wraps array input and return types: <code>[]f64</code>, <code>[]int</code>, <code>[]bool</code>, <code>[]string</code>
 </li>
 <li>
-<input type="checkbox" disabled checked>
-CRAN checks</li>
+<input type="checkbox" disabled checked>CRAN checks</li>
 </ul>
 <p>r module (in v):</p>
 <ul>
@@ -144,31 +132,31 @@ CRAN checks</li>
 </li>
 </ul>
 </div>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
-<p>The <strong>unstable</strong> development version from <a href="https://github.com/">GitHub</a> with:</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>The <strong>unstable</strong> development version from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"edwindj/rvee"</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="overview" class="section level2">
-<h2 class="hasAnchor">
-<a href="#overview" class="anchor"></a>Overview</h2>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
 <p>Possible routes for creating an R extension with <code>v</code> code are:</p>
-<ol>
+<ol style="list-style-type: decimal">
 <li>Transpiling <code>V</code> code to <code>C</code> code and use it as a normal <code>C</code> extension.</li>
 <li>Using the <code>v</code> compiler to build a shared library linked to the R shared library.</li>
 </ol>
 <p>Both options have their benefits and draw backs:</p>
-<ol>
+<ol style="list-style-type: decimal">
 <li><p>Allows for easy distribution and installation, but requires tweaking the compilation flags to pass CRAN checks etc. and removing/stripping code that is not needed by R.</p></li>
 <li><p>Allows for an optimized shared library, but requires <code>v</code> to be installed by the installer (e.g. CRAN).</p></li>
 </ol>
 </div>
-<div id="example" class="section level2">
-<h2 class="hasAnchor">
-<a href="#example" class="anchor"></a>Example</h2>
+<div class="section level2">
+<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+</h2>
 <p>Transpiling to C works.</p>
 <p>Put your <code>v</code> files in the <code>"&lt;pkg&gt;/src/v"</code> directory and decorate each function to be exported with the <code>[rv_export]</code> attribute (see example below).</p>
 <p>After that</p>
@@ -290,8 +278,8 @@ CRAN checks</li>
 <span class="co">#' @return numeric</span>
 <span class="co">#' @keywords internal</span>
 <span class="va">my_pkg_scalar_numeric</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/CallExternal.html">.Call</a></span><span class="op">(</span><span class="st">'_my_pkg_scalar_numeric'</span>, <span class="va">x</span><span class="op">)</span>
+  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/CallExternal.html" class="external-link">.Call</a></span><span class="op">(</span><span class="st">'_my_pkg_scalar_numeric'</span>, <span class="va">x</span><span class="op">)</span>
 <span class="op">}</span>
 
 <span class="co">#' my_pkg_scalar_integer</span>
@@ -302,8 +290,8 @@ CRAN checks</li>
 <span class="co">#' @return integer</span>
 <span class="co">#' @keywords internal</span>
 <span class="va">my_pkg_scalar_integer</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/CallExternal.html">.Call</a></span><span class="op">(</span><span class="st">'_my_pkg_scalar_integer'</span>, <span class="va">x</span><span class="op">)</span>
+  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/CallExternal.html" class="external-link">.Call</a></span><span class="op">(</span><span class="st">'_my_pkg_scalar_integer'</span>, <span class="va">x</span><span class="op">)</span>
 <span class="op">}</span>
 
 <span class="co">#' my_pkg_negate</span>
@@ -314,8 +302,8 @@ CRAN checks</li>
 <span class="co">#' @return logical</span>
 <span class="co">#' @keywords internal</span>
 <span class="va">my_pkg_negate</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/CallExternal.html">.Call</a></span><span class="op">(</span><span class="st">'_my_pkg_negate'</span>, <span class="va">x</span><span class="op">)</span>
+  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">as.logical</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/CallExternal.html" class="external-link">.Call</a></span><span class="op">(</span><span class="st">'_my_pkg_negate'</span>, <span class="va">x</span><span class="op">)</span>
 <span class="op">}</span>
 
 <span class="co">#' my_pkg_my_numeric</span>
@@ -326,8 +314,8 @@ CRAN checks</li>
 <span class="co">#' @return numeric</span>
 <span class="co">#' @keywords internal</span>
 <span class="va">my_pkg_my_numeric</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span>
-  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-  <span class="fu"><a href="https://rdrr.io/r/base/CallExternal.html">.Call</a></span><span class="op">(</span><span class="st">'_my_pkg_my_numeric'</span>, <span class="va">x</span><span class="op">)</span>
+  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/CallExternal.html" class="external-link">.Call</a></span><span class="op">(</span><span class="st">'_my_pkg_my_numeric'</span>, <span class="va">x</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>And create the shared library with a call to devtools</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -338,36 +326,48 @@ CRAN checks</li>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://opensource.org/licenses/mit-license.php">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
-</ul>
-</div>
-<div class="developers">
-<h2>Developers</h2>
-<ul class="list-unstyled">
-<li>Edwin de Jonge <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-6580-4718" target="orcid.widget" aria-label="ORCID"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
 
-  <div class="dev-status">
-<h2>Dev status</h2>
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li><a href="https://CRAN.R-project.org/package=rvee"><img src="https://www.r-pkg.org/badges/version/rvee" alt="CRAN status"></a></li>
-<li><a href="https://github.com/edwindj/rvee/actions"><img src="https://github.com/edwindj/rvee/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
+<li><a href="authors.html#citation">Citing rvee</a></li>
 </ul>
 </div>
+
+<div class="developers">
+<h2 data-toc-skip>Developers</h2>
+<ul class="list-unstyled">
+<li>Edwin de Jonge <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-6580-4718" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+</ul>
 </div>
+
+<div class="dev-status">
+<h2 data-toc-skip>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://CRAN.R-project.org/package=rvee" class="external-link"><img src="https://www.r-pkg.org/badges/version/rvee" alt="CRAN status"></a></li>
+<li><a href="https://github.com/edwindj/rvee/actions" class="external-link"><img src="https://github.com/edwindj/rvee/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
+</ul>
+</div>
+
+  </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Edwin de Jonge.</p>
+  <p></p>
+<p>Developed by Edwin de Jonge.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer>
@@ -375,6 +375,8 @@ CRAN checks</li>
 
   
 
+
+  
 
   </body>
 </html>
