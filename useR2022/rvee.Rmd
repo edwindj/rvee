@@ -146,7 +146,7 @@ Two possible routes for using `v` as extension for R:
 ### `rvee`
 
 - Transpiles v code into C package code, including all wrappers
-- include `vpkg`:`r` with wrapper functions for R's C API (70% complete)
+- include `vpkg`:`r` with wrapper functions for R's C API (30% complete, vector stuff works)
 
 ## `rvee::rv_export_c`
 
