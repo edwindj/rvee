@@ -50,7 +50,7 @@ struct C.Rcomplex {
 
 // #define R_ERROR_H_
 
-// void NORET Rf_error(const char *, ...);
+// void NORET `error(const char *, ...);
 fn C.Rf_error(charptr, ...voidptr)
 // void NORET UNIMPLEMENTED(const char *);
 fn C.UNIMPLEMENTED(x charptr)

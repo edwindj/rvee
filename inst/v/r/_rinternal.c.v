@@ -474,9 +474,12 @@ blank_scalar_string = C.SEXP(C.R_BlankScalarString)
 // SEXP Rf_VectorToPairList(SEXP x);
 // SEXP Rf_asCharacterFactor(SEXP x);
 // int Rf_asLogical(SEXP x);
+fn C.Rf_asLogical(C.SEXP) int
 // int Rf_asLogical2(SEXP x, int checking, SEXP call, SEXP rho);
 // int Rf_asInteger(SEXP x);
+fn C.Rf_asInteger(C.SEXP) int
 // double Rf_asReal(SEXP x);
+fn C.Rf_asReal(C.SEXP) f64
 // Rcomplex Rf_asComplex(SEXP x);
 
 
@@ -999,11 +1002,11 @@ fn C.Rf_unprotect(int)
 // Rbyte (RAW_ELT)(SEXP x, R_xlen_t i);
 // SEXP (STRING_ELT)(SEXP x, R_xlen_t i);
 // double SCALAR_DVAL(SEXP x);
-fn C.SCALAR_DVAL(x C.SEXP) f64
+// fn C.SCALAR_DVAL(x C.SEXP) f64
 // int SCALAR_LVAL(SEXP x);
-fn C.SCALAR_LVAL(x C.SEXP) int
+// fn C.SCALAR_LVAL(x C.SEXP) int
 // int SCALAR_IVAL(SEXP x);
-fn C.SCALAR_IVAL(x C.SEXP) int
+// fn C.SCALAR_IVAL(x C.SEXP) int
 // void SET_SCALAR_DVAL(SEXP x, double v);
 // void SET_SCALAR_LVAL(SEXP x, int v);
 // void SET_SCALAR_IVAL(SEXP x, int v);

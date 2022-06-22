@@ -2,11 +2,11 @@ module r
 
 // conversion between types
 pub fn as_f64(x C.SEXP) f64{
-  return C.SCALAR_DVAL(x)
+  return C.Rf_asReal(x)
 }
 
 pub fn as_int(x C.SEXP) int{
-  return C.SCALAR_IVAL(x)
+  return C.Rf_asInteger(x)
 }
 
 [manualfree]
@@ -28,7 +28,7 @@ pub fn as_f64_array(x C.SEXP) []f64{
 
 
 pub fn as_bool(x C.SEXP) bool{
-  return C.SCALAR_LVAL(x) != 0
+  return C.Rf_asLogical(x) != 0
 }
 
 pub fn as_string(x C.SEXP) string {
