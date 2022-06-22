@@ -3,7 +3,7 @@ pkgdown: 2.0.4
 pkgdown_sha: ~
 articles:
   intro: intro.html
-last_built: 2022-06-21T17:21Z
+last_built: 2022-06-22T13:28Z
 urls:
   reference: https://edwindj.github.io/rvee/reference
   article: https://edwindj.github.io/rvee/articles
